@@ -306,3 +306,44 @@ int lam_substitute(Lat* t, Lstr var_name, Lat s) {
 }
 
 // Substitute
+
+/**
+ * lam_are_identical
+ */
+
+bool lam_are_identical_vars(LatVar* t, LatVar* u) {
+    return strcmp(t->name, u->name) == 0;
+}
+
+bool lam_are_identical_abss(LatAbs* t, LatAbs* u) {
+    if (strcmp(t->var_name, u->var_name) != 0) {
+        return false;
+    }
+
+    return lam_are_identical(t->body, u->body);
+}
+
+bool lam_are_identical_apps(LatApp* t, LatApp* u) {
+    return lam_are_identical(t->fun, u->fun) && lam_are_identical(t->param, u->param);
+}
+
+bool lam_are_identical(Lat t, Lat u) {
+    LatForm tform = lam_term_form(t);
+    LatForm uform = lam_term_form(u);
+    if (tform != uform) { return false; }
+
+    switch (tform) {
+        case LATVAR:
+            return lam_are_identical_vars((LatVar*)t, (LatVar*)u);
+        case LATABS:
+            return lam_are_identical_abss((LatAbs*)t, (LatAbs*)u);
+        case LATAPP:
+            return lam_are_identical_apps((LatApp*)t, (LatApp*)u);
+
+        default:
+            fprintf(stderr, "Invalid lambda term form\n");
+    }
+    return false;
+}
+
+// are_identical
