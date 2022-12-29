@@ -22,4 +22,8 @@ void lam_free(Lat t);
 
 int max_reserved_var_len(Lat t) ;
 Lstr get_fresh_var_name(Lat t) ;
+void lam_rename_var(Lat t, Lstr var_name, Lstr new_name) ;
+Lstr lam_get_var_name(Lat t) ;
+Lstr lam_get_abs_var_name(Lat t) ;
+
 #endif // __LAM_H_

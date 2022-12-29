@@ -125,3 +125,26 @@ UTEST(reserved_char_count, A) {
     ASSERT_STREQ(fresh5, "#####");
     //TODO: free x, x4, fresh2, fresh5.
 }
+
+UTEST(rename, A) {
+    Lat t = lam_make_var("x");
+    lam_rename_var(t, "x", "y");
+    ASSERT_STREQ("y", lam_get_var_name(t));
+
+    LatAbs* ly_y = lam_make_abs("y", t);
+    lam_rename_var(ly_y, "y", "z");
+    ASSERT_STREQ("z", lam_get_abs_var_name(ly_y));
+    ASSERT_STREQ("z", lam_get_var_name(ly_y->body));
+
+    Lat z = lam_make_var("z");
+    LatApp* app = lam_make_app(z, ly_y);
+    lam_rename_var(app, "z", "t");
+    ASSERT_STREQ("t", lam_get_var_name(app->fun));
+    ASSERT_STREQ("t", lam_get_abs_var_name(app->param));
+
+    lam_rename_var(((LatAbs*)app->param)->body, "t", "u");
+    lam_rename_var(app, "t", "v");
+    ASSERT_STREQ(lam_get_var_name(((LatAbs*)app->param)->body), "u");
+    //TODO: free all
+}
+

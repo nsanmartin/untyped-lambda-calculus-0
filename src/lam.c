@@ -73,7 +73,14 @@ void lam_free(Lat t) {
 }
 // Dtor
  
+/**
+ * Getters
+ */
 
+Lstr lam_get_var_name(Lat t) { return ((LatVar*)t)->name; }
+Lstr lam_get_abs_var_name(Lat t) { return ((LatAbs*)t)->var_name; }
+
+// Getters
 /**
  * x \in FV(t)
  */
@@ -153,24 +160,40 @@ Lstr get_fresh_var_name(Lat t) {
 }
 
 
-//void lam_rename_var(Lat* t, Lstr var_name, Lstr new_name) {
-//}
-//
-//void lam_rename_var_in_var(LatVar** t, Lstr var_name, Lstr new_name) {
-//    if (strcmp(var_name, (*t)->name) == 0) {
-//        free((*t)->name);
-//        (*t)->name = new_name;
-//    }
-//}
-//
-//
-//void lam_rename_var_in_abs(LatAbs** t, Lstr var_name, Lstr new_name) {
-//    if (strcmp((*t)->var_name, var_name) == 0) {
-//        free((*t)->var_name);
-//        (*t)->var_name = new_name;
-//    }
-//    lam_rename_var(&(*t)->body);
-//}
+void lam_rename_var_in_var(LatVar* t, Lstr var_name, Lstr new_name) {
+    if (strcmp(var_name, t->name) == 0) {
+        free((char*)t->name);
+        t->name = strdup(new_name);
+    }
+}
+
+
+void lam_rename_var_in_abs(LatAbs* t, Lstr var_name, Lstr new_name) {
+    if (strcmp(t->var_name, var_name) == 0) {
+        free((char*)t->var_name);
+        t->var_name = strdup(new_name);
+    }
+    lam_rename_var(t->body, var_name, new_name);
+}
+
+void lam_rename_var_in_app(LatApp* t, Lstr var_name, Lstr new_name) {
+    lam_rename_var(t->fun, var_name, new_name);
+    lam_rename_var(t->param, var_name, new_name);
+}
+
+void lam_rename_var(Lat t, Lstr var_name, Lstr new_name) {
+    switch (lam_term_form(t)) {
+        case LATVAR:
+            return lam_rename_var_in_var((LatVar*)t, var_name, new_name);
+        case LATABS:
+            return lam_rename_var_in_abs((LatAbs*)t, var_name, new_name);
+        case LATAPP:
+            return lam_rename_var_in_app((LatApp*)t, var_name, new_name);
+        default:
+            fprintf(stderr, "Invalid lambda term form\n");
+    }
+}
+
 
 int lam_substitute(Lat* t, Lstr var_name, Lat s) {
     return 0;
