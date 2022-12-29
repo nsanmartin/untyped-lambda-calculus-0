@@ -68,9 +68,43 @@ Lat lam_make_app(Lat fun, Lat param) {
  * Dtor
  **/
 
-void lam_free(Lat t) {
-    fprintf(stderr, "%s no implemented\n", __func__);
+
+
+void lam_free_var(LatVar* t) {
+    free((char*)t->name);
+    free(t);
 }
+
+void lam_free_abs(LatAbs* t) {
+    free((char*)t->var_name);
+    lam_free(t->body);
+    free(t);
+}
+
+void lam_free_app(LatApp* t) {
+    lam_free(t->fun);
+    lam_free(t->param);
+    free(t);
+}
+
+
+void lam_free(Lat t) {
+    switch (lam_term_form(t)) {
+        case LATVAR:
+            lam_free_var((LatVar*)t);
+            break;
+        case LATABS:
+            lam_free_abs((LatAbs*)t);
+            break;
+        case LATAPP:
+            lam_free_app((LatApp*)t);
+            break;
+        default:
+            fprintf(stderr, "(%s): Invalid lambda term form: %d\n", __func__, lam_term_form(t));
+            break;
+    }
+}
+
 // Dtor
  
 /**

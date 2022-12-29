@@ -7,103 +7,106 @@
 
 #include "lam.h"
 
-struct LamTermsFixture {
-    // vars
-    Lat x, y;
-    // abstractions
-    Lat lx_x, ly_x, lz_ly_x, lz_lx_x, lx_ly_x;
-    //applications
-    Lat xx, xy, Llx_xRx, Llx_xRly_x, LLlx_xRxRy;
-};
+Lat make_x() { return lam_make_var("x"); }
+Lat make_y() { return lam_make_var("y"); }
+Lat make_z() { return lam_make_var("z"); }
+Lat make_lx_x() { return lam_make_abs("x", make_x()); }
+Lat make_ly_x() { return lam_make_abs("y", make_x()); }
+Lat make_ly_y() { return lam_make_abs("y", make_y()); }
+Lat make_lz_ly_x() { return lam_make_abs("z", make_ly_x()); } 
+Lat make_lz_lx_x() { return lam_make_abs("z", make_lx_x()); } 
+Lat make_lx_ly_x() { return lam_make_abs("x", make_ly_x()); } 
 
-UTEST_F_SETUP(LamTermsFixture) {
-    utest_fixture->x = lam_make_var("x");
-    utest_fixture->y = lam_make_var("y");
+Lat make_xx() { return lam_make_app(make_x(), make_x()); };
+Lat make_xy() { return lam_make_app(make_x(), make_y()); };
 
-    utest_fixture->lx_x = lam_make_abs("x", utest_fixture->x);
-    utest_fixture->ly_x = lam_make_abs("y", utest_fixture->x);
-    utest_fixture->lz_ly_x = lam_make_abs("z", utest_fixture->ly_x);
-    utest_fixture->lz_lx_x = lam_make_abs("z", utest_fixture->lx_x);
-    utest_fixture->lx_ly_x = lam_make_abs("x", utest_fixture->ly_x);
-
-    utest_fixture->xx = lam_make_app(utest_fixture->x, utest_fixture->x);
-    utest_fixture->xy = lam_make_app(utest_fixture->x, utest_fixture->y);
-    utest_fixture->Llx_xRx = lam_make_app(utest_fixture->lx_x, utest_fixture->x);
-    utest_fixture->Llx_xRly_x = lam_make_app(utest_fixture->lx_x, utest_fixture->ly_x);
-    utest_fixture->LLlx_xRxRy = lam_make_app(utest_fixture->Llx_xRx, utest_fixture->y);
-}
-
-UTEST_F_TEARDOWN(LamTermsFixture) {
-    lam_free(utest_fixture->x);
-    lam_free(utest_fixture->y);
-
-    lam_free(utest_fixture->lx_x);
-    lam_free(utest_fixture->Llx_xRx);
-    lam_free(utest_fixture->ly_x);
-    lam_free(utest_fixture->lz_ly_x);
-    lam_free(utest_fixture->lz_lx_x);
-    lam_free(utest_fixture->lx_ly_x);
-
-    lam_free(utest_fixture->xx);
-    lam_free(utest_fixture->xy);
-    lam_free(utest_fixture->Llx_xRx);
-    lam_free(utest_fixture->Llx_xRly_x);
-    lam_free(utest_fixture-> LLlx_xRxRy);
-}
+Lat make_Llx_xRx() { return lam_make_app(make_lx_x(), make_x()); }
+Lat make_Llx_xRly_x() { return lam_make_app(make_lx_x(), make_ly_x()); }
+Lat make_LLlx_xRxRy() { return lam_make_app(make_Llx_xRx(), make_y()); }
 
 UTEST_MAIN()
 
-UTEST_F(LamTermsFixture, term_form_name) {
-    ASSERT_STREQ(lam_term_form_name(utest_fixture->x), "Variable");
-    ASSERT_STREQ(lam_term_form_name(utest_fixture->lx_x), "Abstraction");
-    ASSERT_STREQ(lam_term_form_name(utest_fixture->Llx_xRx), "Application");
+UTEST(term_form_name,A) {
+    Lat x = lam_make_var("x");
+    ASSERT_STREQ(lam_term_form_name(x), "Variable");
+
+    Lat lx_x = lam_make_abs("x", x);
+    ASSERT_STREQ(lam_term_form_name(lx_x), "Abstraction");
+
+    Lat Llx_xRx = lam_make_app(lx_x, x);
+    ASSERT_STREQ(lam_term_form_name(Llx_xRx), "Application");
+    lam_free(Llx_xRx);
 }
 
 
-UTEST_F(LamTermsFixture, free_vars_var) {
-    ASSERT_TRUE(is_var_free_in(utest_fixture->x, "x"));
-    ASSERT_FALSE(is_var_free_in(utest_fixture->x, "fresh var"));
+UTEST(lam_free_vars, Var) {
+    Lat x = lam_make_var("x");
+    ASSERT_TRUE(is_var_free_in(x, "x"));
+    ASSERT_FALSE(is_var_free_in(x, "fresh var"));
 }
 
-UTEST_F(LamTermsFixture, free_vars_abs) {
+UTEST(lam_free_vars, Abs) {
 
-    ASSERT_FALSE(is_var_free_in(utest_fixture->lx_x, "x"));
-    ASSERT_TRUE (is_var_free_in(utest_fixture->ly_x, "x"));
-    ASSERT_FALSE(is_var_free_in(utest_fixture->lx_x, "fresh var"));
+    Lat lx_x = make_lx_x();
+    ASSERT_FALSE(is_var_free_in(lx_x, "x"));
+    ASSERT_FALSE(is_var_free_in(lx_x, "fresh var"));
 
-    ASSERT_TRUE(is_var_free_in(utest_fixture->lz_ly_x, "x"));
-    ASSERT_FALSE(is_var_free_in(utest_fixture->lz_ly_x, "y"));
-    ASSERT_FALSE(is_var_free_in(utest_fixture->lz_ly_x, "z"));
 
-    ASSERT_FALSE(is_var_free_in(utest_fixture->lz_lx_x, "x"));
-    ASSERT_FALSE(is_var_free_in(utest_fixture->lz_lx_x, "y"));
-    ASSERT_FALSE(is_var_free_in(utest_fixture->lz_lx_x, "z"));
+    Lat ly_x = make_ly_x();
+    ASSERT_TRUE (is_var_free_in(ly_x, "x"));
 
-    ASSERT_FALSE(is_var_free_in(utest_fixture->lx_ly_x, "x"));
-    ASSERT_FALSE(is_var_free_in(utest_fixture->lx_ly_x, "y"));
-    ASSERT_FALSE(is_var_free_in(utest_fixture->lx_ly_x, "z"));
+    Lat lz_ly_x = make_lz_ly_x();
+    ASSERT_TRUE(is_var_free_in(lz_ly_x, "x"));
+    ASSERT_FALSE(is_var_free_in(lz_ly_x, "y"));
+    ASSERT_FALSE(is_var_free_in(lz_ly_x, "z"));
 
+    Lat lz_lx_x = make_lz_lx_x();
+    ASSERT_FALSE(is_var_free_in(lz_lx_x, "x"));
+    ASSERT_FALSE(is_var_free_in(lz_lx_x, "y"));
+    ASSERT_FALSE(is_var_free_in(lz_lx_x, "z"));
+
+    Lat lx_ly_x = make_lx_ly_x();
+    ASSERT_FALSE(is_var_free_in(lx_ly_x, "x"));
+    ASSERT_FALSE(is_var_free_in(lx_ly_x, "y"));
+    ASSERT_FALSE(is_var_free_in(lx_ly_x, "z"));
+
+    lam_free(lx_x);
+    lam_free(ly_x);
+    lam_free(lz_ly_x);
+    lam_free(lz_lx_x);
+    lam_free(lx_ly_x);
 }
 
 
-UTEST_F(LamTermsFixture, fre_vars_app) {
-    ASSERT_FALSE(is_var_free_in(utest_fixture->xx, "y"));
-    ASSERT_TRUE(is_var_free_in(utest_fixture->xx, "x"));
+UTEST(LamTermsFixture, fre_vars_app) {
+    Lat xx = make_xx();
+    ASSERT_FALSE(is_var_free_in(xx, "y"));
+    ASSERT_TRUE(is_var_free_in(xx, "x"));
 
-    ASSERT_FALSE(is_var_free_in(utest_fixture->xy, "fresh var"));
-    ASSERT_TRUE(is_var_free_in(utest_fixture->xy, "x"));
-    ASSERT_TRUE(is_var_free_in(utest_fixture->xy, "y"));
+    Lat xy = make_xy();
 
-    ASSERT_FALSE(is_var_free_in(utest_fixture->Llx_xRx, "y"));
-    ASSERT_TRUE(is_var_free_in(utest_fixture->Llx_xRx, "x"));
+    ASSERT_FALSE(is_var_free_in(xy, "fresh var"));
+    ASSERT_TRUE(is_var_free_in(xy, "x"));
+    ASSERT_TRUE(is_var_free_in(xy, "y"));
 
-    ASSERT_FALSE(is_var_free_in(utest_fixture->Llx_xRly_x, "y"));
-    ASSERT_TRUE(is_var_free_in(utest_fixture->Llx_xRly_x, "x"));
+    Lat Llx_xRx = make_Llx_xRx();
+    ASSERT_FALSE(is_var_free_in(Llx_xRx, "y"));
+    ASSERT_TRUE(is_var_free_in(Llx_xRx, "x"));
 
-    ASSERT_FALSE(is_var_free_in(utest_fixture->LLlx_xRxRy, "fresh var"));
-    ASSERT_TRUE(is_var_free_in(utest_fixture->LLlx_xRxRy, "x"));
-    ASSERT_TRUE(is_var_free_in(utest_fixture->LLlx_xRxRy, "y"));
+    Lat Llx_xRly_x = make_Llx_xRly_x();
+    ASSERT_FALSE(is_var_free_in(Llx_xRly_x, "y"));
+    ASSERT_TRUE(is_var_free_in(Llx_xRly_x, "x"));
 
+    Lat LLlx_xRxRy = make_LLlx_xRxRy();
+    ASSERT_FALSE(is_var_free_in(LLlx_xRxRy, "fresh var"));
+    ASSERT_TRUE(is_var_free_in(LLlx_xRxRy, "x"));
+    ASSERT_TRUE(is_var_free_in(LLlx_xRxRy, "y"));
+
+    lam_free(xx);
+    lam_free(xy);
+    lam_free(Llx_xRx);
+    lam_free(Llx_xRly_x);
+    lam_free(LLlx_xRxRy);
 }
 
 UTEST(reserved_char_count, A) {
@@ -123,28 +126,35 @@ UTEST(reserved_char_count, A) {
 
     Lstr fresh5 = get_fresh_var_name(x4);
     ASSERT_STREQ(fresh5, "#####");
-    //TODO: free x, x4, fresh2, fresh5.
+
+    lam_free(x);
+    lam_free(x4);
+    lam_free(lx_x4);
+    lam_free(x4x);
+    free((char*)fresh2);
+    free((char*)fresh5);
 }
 
 UTEST(rename, A) {
-    Lat t = lam_make_var("x");
+    Lat t = make_x();
     lam_rename_var(t, "x", "y");
     ASSERT_STREQ("y", lam_get_var_name(t));
+    lam_free(t);
 
-    LatAbs* ly_y = lam_make_abs("y", t);
+    LatAbs* ly_y = make_ly_y();
     lam_rename_var(ly_y, "y", "z");
     ASSERT_STREQ("z", lam_get_abs_var_name(ly_y));
     ASSERT_STREQ("z", lam_get_var_name(ly_y->body));
+    lam_free(ly_y);
 
-    Lat z = lam_make_var("z");
-    LatApp* app = lam_make_app(z, ly_y);
-    lam_rename_var(app, "z", "t");
+    LatApp* app = lam_make_app(make_y(), make_ly_y());
+    lam_rename_var(app, "y", "t");
     ASSERT_STREQ("t", lam_get_var_name(app->fun));
     ASSERT_STREQ("t", lam_get_abs_var_name(app->param));
 
     lam_rename_var(((LatAbs*)app->param)->body, "t", "u");
     lam_rename_var(app, "t", "v");
     ASSERT_STREQ(lam_get_var_name(((LatAbs*)app->param)->body), "u");
-    //TODO: free all
+    lam_free(app);
 }
 
