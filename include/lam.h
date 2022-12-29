@@ -20,4 +20,6 @@ Lat lam_make_app(Lat fun, Lat param);
 bool is_var_free_in(Lat t, Lstr var_name);
 void lam_free(Lat t);
 
+int max_reserved_var_len(Lat t) ;
+Lstr get_fresh_var_name(Lat t) ;
 #endif // __LAM_H_

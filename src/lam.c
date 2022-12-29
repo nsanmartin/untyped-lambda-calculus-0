@@ -5,6 +5,8 @@
 
 #include "lam.h"
 
+long used_fresh_vars = 0;
+
 LatForm lam_term_form(Lat t) { return *(LatForm*)t; }
 
 Lstr lam_term_form_name(Lat t) {
@@ -107,6 +109,69 @@ bool is_var_free_in(Lat t, Lstr var_name) {
 /**
  * subst
  */
+
+const char var_reserved_char = '#';
+
+int count_trailing_left(Lstr s, const char c) {
+    const char* p = s;
+    while (*p == c) { ++p; }
+    return p - s;
+}
+
+
+int max_reserved_var_len_in_var(LatVar* t) { return count_trailing_left(t->name, var_reserved_char); }
+int max_reserved_var_len_in_abs(LatAbs* t) {
+    return max_reserved_var_len(t->body);
+    //TODO: use \x if same?
+}
+int max_reserved_var_len_in_app(LatApp* t) {
+    int fun_count = max_reserved_var_len(t->fun); 
+    int param_count = max_reserved_var_len(t->param); 
+    return fun_count > param_count ? fun_count : param_count;
+}
+int max_reserved_var_len(Lat t) {
+    switch (lam_term_form(t)) {
+        case LATVAR:
+            return max_reserved_var_len_in_var((LatVar*)t);
+        case LATABS:
+            return max_reserved_var_len_in_abs((LatAbs*)t);
+        case LATAPP:
+            return max_reserved_var_len_in_app((LatApp*)t);
+        default:
+            fprintf(stderr, "Invalid lambda term form\n");
+            return false;
+    }
+}
+
+Lstr get_fresh_var_name(Lat t) {
+    const int len = max_reserved_var_len(t)  + 1;
+    char* rv = malloc(sizeof(char) * (len+ 1));
+    if (!rv) { return NULL; }
+    memset(rv, var_reserved_char, len);
+    rv[len] = '\0';
+    return rv;
+}
+
+
+//void lam_rename_var(Lat* t, Lstr var_name, Lstr new_name) {
+//}
+//
+//void lam_rename_var_in_var(LatVar** t, Lstr var_name, Lstr new_name) {
+//    if (strcmp(var_name, (*t)->name) == 0) {
+//        free((*t)->name);
+//        (*t)->name = new_name;
+//    }
+//}
+//
+//
+//void lam_rename_var_in_abs(LatAbs** t, Lstr var_name, Lstr new_name) {
+//    if (strcmp((*t)->var_name, var_name) == 0) {
+//        free((*t)->var_name);
+//        (*t)->var_name = new_name;
+//    }
+//    lam_rename_var(&(*t)->body);
+//}
+
 int lam_substitute(Lat* t, Lstr var_name, Lat s) {
     return 0;
 }
@@ -120,8 +185,14 @@ int lam_substitute_in_var(LatVar** t, Lstr var_name, Lat s) {
 }
 
 int lam_substitute_in_abs(LatAbs** t, Lstr var_name, Lat s) {
-    if (strcmp((*t)->var_name, var_name) != 0) {
-
+    //TODO: check for NULL?
+    LatAbs* abs = *t;
+    if (strcmp(abs->var_name, var_name) != 0) {
+        if (is_var_free_in_var(s, var_name)) {
+            Lstr fresh_name = get_fresh_var_name(s);
+        } else {
+            lam_substitute(abs->body, var_name, s);
+        }
     }
     // else, same var, do nothing
     

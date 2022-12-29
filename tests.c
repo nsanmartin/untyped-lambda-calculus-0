@@ -105,3 +105,23 @@ UTEST_F(LamTermsFixture, fre_vars_app) {
     ASSERT_TRUE(is_var_free_in(utest_fixture->LLlx_xRxRy, "y"));
 
 }
+
+UTEST(reserved_char_count, A) {
+    Lat x = lam_make_var("#");
+    Lat x4 = lam_make_var("####");
+    ASSERT_EQ(max_reserved_var_len(x), 1); 
+    ASSERT_EQ(max_reserved_var_len(x4), 4); 
+
+    Lat lx_x4 = lam_make_abs("####", x4);
+    ASSERT_EQ(max_reserved_var_len(lx_x4), 4); 
+
+    Lat x4x = lam_make_app(x4, x);
+    ASSERT_EQ(max_reserved_var_len(x4x), 4); 
+
+    Lstr fresh2 = get_fresh_var_name(x);
+    ASSERT_STREQ(fresh2, "##");
+
+    Lstr fresh5 = get_fresh_var_name(x4);
+    ASSERT_STREQ(fresh5, "#####");
+    //TODO: free x, x4, fresh2, fresh5.
+}
