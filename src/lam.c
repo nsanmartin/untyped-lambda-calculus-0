@@ -229,10 +229,6 @@ void lam_rename_var(Lat t, Lstr var_name, Lstr new_name) {
 }
 
 
-int lam_substitute(Lat* t, Lstr var_name, Lat s) {
-    return 0;
-}
-
 int lam_substitute_in_var(LatVar** t, Lstr var_name, Lat s) {
     if (strcmp((*t)->name, var_name) == 0) {
         lam_free(*t);
@@ -247,12 +243,37 @@ int lam_substitute_in_abs(LatAbs** t, Lstr var_name, Lat s) {
     if (strcmp(abs->var_name, var_name) != 0) {
         if (is_var_free_in_var(s, var_name)) {
             Lstr fresh_name = get_fresh_var_name(s);
+            lam_rename_var(s, var_name, fresh_name);
+            free((char*)fresh_name);
         } else {
             lam_substitute(abs->body, var_name, s);
         }
     }
     // else, same var, do nothing
-    
-
+    return 0;
 }
+
+int lam_substitute_in_app(LatApp** t, Lstr var_name, Lat s) {
+    LatApp* app = *t;
+    lam_substitute(app->fun, var_name, s);
+    lam_substitute(app->param, var_name, s);
+    return 0;
+}
+
+int lam_substitute(Lat* t, Lstr var_name, Lat s) {
+    switch (lam_term_form(*t)) {
+        case LATVAR:
+            return lam_substitute_in_var((LatVar**)t, var_name, s);
+        case LATABS:
+            return lam_substitute_in_abs((LatAbs**)t, var_name, s);
+        case LATAPP:
+            return lam_substitute_in_app((LatApp**)t, var_name, s);
+        default:
+            fprintf(stderr, "Invalid lambda term form\n");
+            return -1;
+    }
+    return 0;
+}
+
+
 // subst

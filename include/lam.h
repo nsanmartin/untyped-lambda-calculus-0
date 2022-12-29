@@ -26,4 +26,6 @@ void lam_rename_var(Lat t, Lstr var_name, Lstr new_name) ;
 Lstr lam_get_var_name(Lat t) ;
 Lstr lam_get_abs_var_name(Lat t) ;
 
+int lam_substitute(Lat* t, Lstr var_name, Lat s) ;
+
 #endif // __LAM_H_

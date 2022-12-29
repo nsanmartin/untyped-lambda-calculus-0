@@ -27,23 +27,18 @@ Lat make_LLlx_xRxRy() { return lam_make_app(make_Llx_xRx(), make_y()); }
 UTEST_MAIN()
 
 UTEST(term_form_name,A) {
-    Lat x = lam_make_var("x");
+    Lat x = make_x();
     ASSERT_STREQ(lam_term_form_name(x), "Variable");
 
-    Lat lx_x = lam_make_abs("x", x);
+    Lat lx_x = make_lx_x();
     ASSERT_STREQ(lam_term_form_name(lx_x), "Abstraction");
 
-    Lat Llx_xRx = lam_make_app(lx_x, x);
+    Lat Llx_xRx = make_Llx_xRx ();
     ASSERT_STREQ(lam_term_form_name(Llx_xRx), "Application");
     lam_free(Llx_xRx);
 }
 
 
-UTEST(lam_free_vars, Var) {
-    Lat x = lam_make_var("x");
-    ASSERT_TRUE(is_var_free_in(x, "x"));
-    ASSERT_FALSE(is_var_free_in(x, "fresh var"));
-}
 
 UTEST(lam_free_vars, Abs) {
 
@@ -115,10 +110,10 @@ UTEST(reserved_char_count, A) {
     ASSERT_EQ(max_reserved_var_len(x), 1); 
     ASSERT_EQ(max_reserved_var_len(x4), 4); 
 
-    Lat lx_x4 = lam_make_abs("####", x4);
+    Lat lx_x4 = lam_make_abs("####", lam_make_var("####"));
     ASSERT_EQ(max_reserved_var_len(lx_x4), 4); 
 
-    Lat x4x = lam_make_app(x4, x);
+    Lat x4x = lam_make_app(lam_make_var("####"), lam_make_var("#"));
     ASSERT_EQ(max_reserved_var_len(x4x), 4); 
 
     Lstr fresh2 = get_fresh_var_name(x);
@@ -158,3 +153,9 @@ UTEST(rename, A) {
     lam_free(app);
 }
 
+UTEST(substitute, A) {
+    Lat x = make_x();
+    Lat s = make_lx_ly_x();
+    lam_substitute(&x, "x", s);
+    ASSERT_EQ(x, s);
+}
