@@ -147,10 +147,6 @@ bool is_var_free_in(Lat t, Lstr var_name) {
 
 
 
-/**
- * subst
- */
-
 const char var_reserved_char = '#';
 
 int count_trailing_left(Lstr s, const char c) {
@@ -193,6 +189,9 @@ Lstr get_fresh_var_name(Lat t) {
     return rv;
 }
 
+/**
+ * Rename
+ */
 
 void lam_rename_var_in_var(LatVar* t, Lstr var_name, Lstr new_name) {
     if (strcmp(var_name, t->name) == 0) {
@@ -228,11 +227,42 @@ void lam_rename_var(Lat t, Lstr var_name, Lstr new_name) {
     }
 }
 
+// Rename
+
+/**
+ * Clone
+ */
+
+Lat lam_clone_var(LatVar* t) { return lam_make_var(t->name); }
+Lat lam_clone_abs(LatAbs* t) { return lam_make_abs(t->var_name, lam_clone(t->body)); }
+Lat lam_clone_app(LatApp* t) {
+    return lam_make_app(lam_clone(t->fun), lam_clone(t->param));
+}
+
+
+Lat lam_clone(Lat t) {
+    switch (lam_term_form(t)) {
+        case LATVAR:
+            return lam_clone_var((LatVar*)t);
+        case LATABS:
+            return lam_clone_abs((LatAbs*)t);
+        case LATAPP:
+            return lam_clone_app((LatApp*)t);
+        default:
+            fprintf(stderr, "Invalid lambda term form\n");
+    }
+}
+
+// Clone
+
+/**
+ * Substitute
+ */
 
 int lam_substitute_in_var(LatVar** t, Lstr var_name, Lat s) {
     if (strcmp((*t)->name, var_name) == 0) {
         lam_free(*t);
-        *t = s;
+        *t = lam_clone(s);
     }
     return 0;
 }
@@ -275,5 +305,4 @@ int lam_substitute(Lat* t, Lstr var_name, Lat s) {
     return 0;
 }
 
-
-// subst
+// Substitute

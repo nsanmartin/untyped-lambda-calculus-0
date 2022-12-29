@@ -153,9 +153,32 @@ UTEST(rename, A) {
     lam_free(app);
 }
 
+//TODO: implement lam_is_identical and assert with it
+UTEST(lam_clone, A) {
+    Lat x = make_x();
+    Lat x2 = lam_clone(x);
+    ASSERT_FALSE(x == x2);
+    ASSERT_STREQ("Variable", lam_term_form_name(x2));
+    lam_free(x);
+    lam_free(x2);
+
+    Lat lx_x = make_lx_x();
+    Lat lx_x2 = lam_clone(lx_x);
+    ASSERT_FALSE(lx_x == lx_x2);
+    ASSERT_STREQ("Abstraction", lam_term_form_name(lx_x2));
+
+    Lat LLlx_xRxRy = make_LLlx_xRxRy();
+    Lat LLlx_xRxRy2 = lam_clone(LLlx_xRxRy);
+    ASSERT_FALSE(LLlx_xRxRy == LLlx_xRxRy2);
+    ASSERT_STREQ("Application", lam_term_form_name(LLlx_xRxRy2));
+
+}
+
 UTEST(substitute, A) {
     Lat x = make_x();
     Lat s = make_lx_ly_x();
     lam_substitute(&x, "x", s);
-    ASSERT_EQ(x, s);
+    ASSERT_STREQ(lam_term_form_name(x), lam_term_form_name(s));
 }
+
+

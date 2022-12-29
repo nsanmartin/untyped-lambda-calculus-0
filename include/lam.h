@@ -28,4 +28,5 @@ Lstr lam_get_abs_var_name(Lat t) ;
 
 int lam_substitute(Lat* t, Lstr var_name, Lat s) ;
 
+Lat lam_clone(Lat t);
 #endif // __LAM_H_
