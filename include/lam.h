@@ -16,4 +16,8 @@ Lstr lam_term_form_name(Lat t);
 Lat lam_make_var(Lstr name);
 Lat lam_make_abs(Lstr var_name, Lat body);
 Lat lam_make_app(Lat fun, Lat param);
+
+bool is_var_free_in(Lat t, Lstr var_name);
+void lam_free(Lat t);
+
 #endif // __LAM_H_
