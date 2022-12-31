@@ -221,3 +221,20 @@ UTEST(substitute, A) {
 }
 
 
+UTEST(to_string, A) {
+    Lat x = make_x();
+    Lstr x_str = lam_to_string(x);
+    ASSERT_STREQ("x", x_str);
+
+    Lat lx_x = make_lx_x();
+    Lstr str_lx_x = lam_to_string(lx_x);
+    ASSERT_STREQ("(\\x.x)", str_lx_x);
+
+    Lat lx_ly_x = make_lx_ly_x();
+    Lstr str_lx_ly_x = lam_to_string(lx_ly_x);
+    ASSERT_STREQ("(\\x.(\\y.x))", str_lx_ly_x);
+
+    Lat Llx_xRly_x  = make_Llx_xRly_x ();
+    Lstr str_Llx_xRly_x  = lam_to_string(Llx_xRly_x );
+    ASSERT_STREQ("((\\x.x)(\\y.x))", str_Llx_xRly_x );
+}

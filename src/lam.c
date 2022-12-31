@@ -361,3 +361,50 @@ bool lam_are_identical(Lat t, Lat u) {
 }
 
 // are_identical
+
+/*
+ * to_string
+ */
+
+Lstr lam_to_string_in_var(LatVar* t) {
+    return strdup(t->name);
+}
+
+
+Lstr lam_to_string_in_abs(LatAbs* t) {
+    Lstr body = lam_to_string(t->body);
+    int vlen = strlen(t->var_name);
+    int blen = strlen(body);
+    int len = vlen + blen + 5;
+    char* rv = malloc(sizeof(char) * len);
+    snprintf(rv, len, "(\\%s.%s)", t->var_name, body);
+    free((char*)body);
+    return rv;
+
+}
+
+
+Lstr lam_to_string_in_app(LatApp* t) {
+    Lstr fun = lam_to_string(t->fun);
+    Lstr param = lam_to_string(t->param);
+    int len = strlen(fun) + strlen(param) + 3;
+    char* rv = malloc(sizeof(char) * len);
+    snprintf(rv, len, "(%s%s)", fun, param);
+    return rv;
+}
+
+Lstr lam_to_string(Lat t) {
+    switch (lam_term_form(t)) {
+        case LATVAR:
+            return lam_to_string_in_var((LatVar*)t);
+        case LATABS:
+            return lam_to_string_in_abs((LatAbs*)t);
+        case LATAPP:
+            return lam_to_string_in_app((LatApp*)t);
+        default:
+            fprintf(stderr, "(%s) Invalid lambda term form\n", __func__);
+    }
+    return NULL;
+}
+
+// to_string
