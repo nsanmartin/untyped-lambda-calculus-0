@@ -181,16 +181,43 @@ UTEST(lam_clone, A) {
     lam_free(LLlx_xRxRy2);
 }
 
+
+UTEST(substitute, base_unchanged) {
+    Lat x = make_x();
+    Lat s = make_y();
+    Lat unchanged_var = lam_substitute(x, "Y", s);
+    ASSERT_TRUE(lam_are_identical(x , unchanged_var));
+
+    Lat lx_x = make_lx_x();
+    Lat unchanged_abs = lam_substitute(lx_x, "Y", s);
+    ASSERT_TRUE(lam_are_identical(lx_x , unchanged_abs));
+
+    Lat xy = make_xy();
+    Lat unchanged_app = lam_substitute(xy, "Y", s);
+    ASSERT_TRUE(lam_are_identical(xy , unchanged_app));
+    //todo: free
+}
+
 UTEST(substitute, A) {
     Lat x = make_x();
     Lat s = make_lx_ly_x();
-    lam_substitute(&x, "x", s);
-    ASSERT_STREQ(lam_term_form_name(x), lam_term_form_name(s));
-    ASSERT_TRUE(lam_are_identical(x, s));
+    Lat substituted = lam_substitute(x, "x", s);
+    ASSERT_TRUE(lam_are_identical(substituted, s));
 
+    Lat y = make_y();
+    ASSERT_FALSE(lam_are_identical(y, s));
 
-    lam_free(x);
-    lam_free(s);
+    //Lat make_Llx_xRly_x() { return lam_make_app(make_lx_x(), make_ly_x()); }
+    Lat Llx_xRly_x = make_Llx_xRly_x();
+    Lat changed = lam_substitute(Llx_xRly_x, "x", s);
+    ASSERT_FALSE(lam_are_identical(Llx_xRly_x , changed));
+
+    Lat unchanged = lam_substitute(Llx_xRly_x, "Y", s);
+    ASSERT_TRUE(lam_are_identical(Llx_xRly_x , unchanged));
+
+    // lam_free(x);
+    // lam_free(s);
+    // lam_free(y);
 }
 
 
