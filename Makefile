@@ -1,11 +1,26 @@
+CFLAGS := -g -I./include -I./utest.h
+
 CC=gcc
 
-run-tests: tests
-	./build/tests
+BUILD_DIR=./build
+OBJ_DIR=./build
+SRC_DIR=./src
 
-tests:
-	$(CC) -g -I./include -I./utest.h -o ./build/$@ ./$@.c ./src/lam.c
+HEADERS=$(wildcard include/*.h)
+SRCS=src/lam.c # $(wildcard src/*.c)
+OBJS=$(SRCS:src/%.c=build/%.o)
+
+run-tests: ./build/tests
+	$<
+
+$(BUILD_DIR)/tests: tests.c $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^
+
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS) 
+	$(CC) $(MKFLG) -c -o $@ $< $(CFLAGS) 
 
 clean:
-	rm ./build/*
+	find ./build/ -type f -delete
+
 
