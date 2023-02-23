@@ -1,4 +1,5 @@
-CFLAGS := -g -I./include -I./utest.h
+CFLAGS := -g -Wall -Werror -pedantic \
+		  -Iinclude -Iutest.h -Idatatype99 -Imetalang99/include
 
 CC=gcc
 

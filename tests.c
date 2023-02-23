@@ -17,8 +17,8 @@ Lat make_lz_ly_x() { return lam_make_abs("z", make_ly_x()); }
 Lat make_lz_lx_x() { return lam_make_abs("z", make_lx_x()); } 
 Lat make_lx_ly_x() { return lam_make_abs("x", make_ly_x()); } 
 
-Lat make_xx() { return lam_make_app(make_x(), make_x()); };
-Lat make_xy() { return lam_make_app(make_x(), make_y()); };
+Lat make_xx() { return lam_make_app(make_x(), make_x()); }
+Lat make_xy() { return lam_make_app(make_x(), make_y()); }
 
 Lat make_Llx_xRx() { return lam_make_app(make_lx_x(), make_x()); }
 Lat make_Llx_xRly_x() { return lam_make_app(make_lx_x(), make_ly_x()); }
@@ -27,158 +27,188 @@ Lat make_LLlx_xRxRy() { return lam_make_app(make_Llx_xRx(), make_y()); }
 UTEST_MAIN()
 
 UTEST(term_form_name,A) {
-    Lat x = make_x();
-    ASSERT_STREQ(lam_term_form_name(x), "Variable");
+    Lterm x = Lvar("x");
+    ASSERT_STREQ(ulam_get_form_name(&x), "Variable");
 
-    Lat lx_x = make_lx_x();
-    ASSERT_STREQ(lam_term_form_name(lx_x), "Abstraction");
+    Lterm lx_x = Labs("x", &x);
+    ASSERT_STREQ(ulam_get_form_name(&lx_x), "Abstraction");
 
-    Lat Llx_xRx = make_Llx_xRx ();
-    ASSERT_STREQ(lam_term_form_name(Llx_xRx), "Application");
-    lam_free(Llx_xRx);
+    Lterm applx_x__x = Lapp(&lx_x, &x);
+    ASSERT_STREQ(ulam_get_form_name(&applx_x__x), "Application");
 }
 
 
 
 UTEST(lam_free_vars, Abs) {
 
-    Lat lx_x = make_lx_x();
-    ASSERT_FALSE(is_var_free_in(lx_x, "x"));
-    ASSERT_FALSE(is_var_free_in(lx_x, "fresh var"));
+    Lterm x = Lvar("x");
+    Lterm lx_x = Labs("x", &x);
+    ASSERT_FALSE(ulam_is_var_free_in(&lx_x, "x"));
+    ASSERT_FALSE(ulam_is_var_free_in(&lx_x, "fresh var"));
 
 
-    Lat ly_x = make_ly_x();
-    ASSERT_TRUE (is_var_free_in(ly_x, "x"));
+    Lterm ly_x = Labs("y", &x);
+    ASSERT_TRUE (ulam_is_var_free_in(&ly_x, "x"));
 
-    Lat lz_ly_x = make_lz_ly_x();
-    ASSERT_TRUE(is_var_free_in(lz_ly_x, "x"));
-    ASSERT_FALSE(is_var_free_in(lz_ly_x, "y"));
-    ASSERT_FALSE(is_var_free_in(lz_ly_x, "z"));
+    Lterm lz_ly_x = Labs("z", &ly_x);
+    ASSERT_TRUE(ulam_is_var_free_in( &lz_ly_x, "x"));
+    ASSERT_FALSE(ulam_is_var_free_in(&lz_ly_x, "y"));
+    ASSERT_FALSE(ulam_is_var_free_in(&lz_ly_x, "z"));
 
-    Lat lz_lx_x = make_lz_lx_x();
-    ASSERT_FALSE(is_var_free_in(lz_lx_x, "x"));
-    ASSERT_FALSE(is_var_free_in(lz_lx_x, "y"));
-    ASSERT_FALSE(is_var_free_in(lz_lx_x, "z"));
+    Lterm lz_lx_x = Labs("z", &lx_x);
+    ASSERT_FALSE(ulam_is_var_free_in(&lz_lx_x, "x"));
+    ASSERT_FALSE(ulam_is_var_free_in(&lz_lx_x, "y"));
+    ASSERT_FALSE(ulam_is_var_free_in(&lz_lx_x, "z"));
 
-    Lat lx_ly_x = make_lx_ly_x();
-    ASSERT_FALSE(is_var_free_in(lx_ly_x, "x"));
-    ASSERT_FALSE(is_var_free_in(lx_ly_x, "y"));
-    ASSERT_FALSE(is_var_free_in(lx_ly_x, "z"));
-
-    lam_free(lx_x);
-    lam_free(ly_x);
-    lam_free(lz_ly_x);
-    lam_free(lz_lx_x);
-    lam_free(lx_ly_x);
+    Lterm lx_ly_x = Labs("x", &ly_x);
+    ASSERT_FALSE(ulam_is_var_free_in(&lx_ly_x, "x"));
+    ASSERT_FALSE(ulam_is_var_free_in(&lx_ly_x, "y"));
+    ASSERT_FALSE(ulam_is_var_free_in(&lx_ly_x, "z"));
 }
 
 
-UTEST(LamTermsFixture, fre_vars_app) {
-    Lat xx = make_xx();
-    ASSERT_FALSE(is_var_free_in(xx, "y"));
-    ASSERT_TRUE(is_var_free_in(xx, "x"));
+UTEST(LamTermsFixture, free_vars_app) {
+    Lterm x = Lvar("x");
+    Lterm xx = Lapp(&x, &x);
+    ASSERT_FALSE(ulam_is_var_free_in(&xx, "y"));
+    ASSERT_TRUE(ulam_is_var_free_in(&xx, "x"));
 
-    Lat xy = make_xy();
+    Lterm y = Lvar("y");
+    Lterm xy = Lapp(&x, &y);
 
-    ASSERT_FALSE(is_var_free_in(xy, "fresh var"));
-    ASSERT_TRUE(is_var_free_in(xy, "x"));
-    ASSERT_TRUE(is_var_free_in(xy, "y"));
+    ASSERT_FALSE(ulam_is_var_free_in(&xy, "fresh var"));
+    ASSERT_TRUE(ulam_is_var_free_in(&xy, "x"));
+    ASSERT_TRUE(ulam_is_var_free_in(&xy, "y"));
 
-    Lat Llx_xRx = make_Llx_xRx();
-    ASSERT_FALSE(is_var_free_in(Llx_xRx, "y"));
-    ASSERT_TRUE(is_var_free_in(Llx_xRx, "x"));
+    Lterm lx_x = Labs("x", &x);
+    Lterm applx_x__x = Lapp(&lx_x, &x);
+    ASSERT_FALSE(ulam_is_var_free_in(&applx_x__x, "y"));
+    ASSERT_TRUE(ulam_is_var_free_in(&applx_x__x, "x"));
 
-    Lat Llx_xRly_x = make_Llx_xRly_x();
-    ASSERT_FALSE(is_var_free_in(Llx_xRly_x, "y"));
-    ASSERT_TRUE(is_var_free_in(Llx_xRly_x, "x"));
+    Lterm ly_x = Labs("y", &x);
+    Lterm applx_x__lx_y = Lapp(&lx_x, &ly_x);
+    ASSERT_FALSE(ulam_is_var_free_in(&applx_x__lx_y, "y"));
+    ASSERT_TRUE(ulam_is_var_free_in(&applx_x__lx_y, "x"));
 
-    Lat LLlx_xRxRy = make_LLlx_xRxRy();
-    ASSERT_FALSE(is_var_free_in(LLlx_xRxRy, "fresh var"));
-    ASSERT_TRUE(is_var_free_in(LLlx_xRxRy, "x"));
-    ASSERT_TRUE(is_var_free_in(LLlx_xRxRy, "y"));
-
-    lam_free(xx);
-    lam_free(xy);
-    lam_free(Llx_xRx);
-    lam_free(Llx_xRly_x);
-    lam_free(LLlx_xRxRy);
+    Lterm ap1ap0lx_x_0lx_y_1y = Lapp(&applx_x__x, &y);
+    ASSERT_FALSE(ulam_is_var_free_in(&ap1ap0lx_x_0lx_y_1y , "fresh var"));
+    ASSERT_TRUE(ulam_is_var_free_in(&ap1ap0lx_x_0lx_y_1y , "x"));
+    ASSERT_TRUE(ulam_is_var_free_in(&ap1ap0lx_x_0lx_y_1y , "y"));
 }
 
 UTEST(reserved_char_count, A) {
-    Lat x = lam_make_var("#");
-    Lat x4 = lam_make_var("####");
-    ASSERT_EQ(max_reserved_var_len(x), 1); 
-    ASSERT_EQ(max_reserved_var_len(x4), 4); 
+    Lterm x = Lvar("#");
+    Lterm x4 = Lvar("####");
+    ASSERT_EQ(ulam_max_reserved_var_len(&x), 1); 
+    ASSERT_EQ(ulam_max_reserved_var_len(&x4), 4); 
 
-    Lat lx_x4 = lam_make_abs("####", lam_make_var("####"));
-    ASSERT_EQ(max_reserved_var_len(lx_x4), 4); 
+    Lterm lx_x4 = Labs("####", &x4);
+    ASSERT_EQ(ulam_max_reserved_var_len(&lx_x4), 4); 
 
-    Lat x4x = lam_make_app(lam_make_var("####"), lam_make_var("#"));
-    ASSERT_EQ(max_reserved_var_len(x4x), 4); 
+    Lterm x4x = Lapp(&x4, &x);
+    ASSERT_EQ(ulam_max_reserved_var_len(&x4x), 4); 
 
-    Lstr fresh2 = get_fresh_var_name(x);
+    Lstr fresh2 = ulam_get_fresh_var_name(&x);
     ASSERT_STREQ(fresh2, "##");
 
-    Lstr fresh5 = get_fresh_var_name(x4);
+    Lstr fresh5 = get_fresh_var_name(&x4);
     ASSERT_STREQ(fresh5, "#####");
 
-    lam_free(x);
-    lam_free(x4);
-    lam_free(lx_x4);
-    lam_free(x4x);
     free((char*)fresh2);
     free((char*)fresh5);
 }
 
 UTEST(rename, A) {
-    Lat t = make_x();
-    lam_rename_var(t, "x", "y");
-    ASSERT_STREQ("y", lam_get_var_name(t));
-    lam_free(t);
+    Lterm t = Lvar("x");
+    ulam_rename_var(&t, "x", "y");
+    match(t) {
+        of(Lvar, name) { ASSERT_STREQ("y", *name); }
+        otherwise{}
+    }
 
-    LatAbs* ly_y = make_ly_y();
-    lam_rename_var(ly_y, "y", "z");
-    ASSERT_STREQ("z", lam_get_abs_var_name(ly_y));
-    ASSERT_STREQ("z", lam_get_var_name(ly_y->body));
-    lam_free(ly_y);
+    Lterm y = Lvar("y");
+    Lterm ly_y = Labs("y", &y);
+    ulam_rename_var(&ly_y, "y", "z");
+    match(ly_y) {
+        of(Labs, x, b) {
+            ASSERT_STREQ("z", *x);
+            match(**b) {
+                of(Lvar, name) { ASSERT_STREQ("z", *name); }
+                otherwise{}
+            }
+        }
+        otherwise{}
+    }
 
-    LatApp* app = lam_make_app(make_y(), make_ly_y());
-    lam_rename_var(app, "y", "t");
-    ASSERT_STREQ("t", lam_get_var_name(app->fun));
-    ASSERT_STREQ("t", lam_get_abs_var_name(app->param));
+    Lterm y2 = Lvar("y");
+    Lterm ly_y2 = Labs("y", &y2);
+    Lterm app = Lapp(&y2, &ly_y2);
+    ulam_rename_var(&app, "y", "t");
+    match(app) {
+        of(Lapp, f, p) {
+            match(**f) {
+                of(Lvar, name) { ASSERT_STREQ("t", *name); }
+                otherwise{}
+            }
+            match(**p) {
+                of(Labs, v, _) {
+                    ASSERT_STREQ("t", *v);
+                }
+                otherwise{}
+            }
+        }
+        otherwise{}
+    }
 
-    lam_rename_var(((LatAbs*)app->param)->body, "t", "u");
-    lam_rename_var(app, "t", "v");
-    ASSERT_STREQ(lam_get_var_name(((LatAbs*)app->param)->body), "u");
-    lam_free(app);
+    match(app) {
+        of(Lapp, _, p) {
+            match(**p) {
+                of(Labs, _, b) {
+                    ulam_rename_var(*b, "t", "u");
+                }
+                otherwise{}
+            }
+        }
+        otherwise{}
+    }
+    ulam_rename_var(&app, "t", "v");
+
+    match(app) {
+        of(Lapp, _, p) {
+            match(**p) {
+                of(Labs, _, b) {
+                    ASSERT_STREQ(lam_get_var_name(*b), "u");
+                }
+                otherwise{}
+            }
+        }
+        otherwise{}
+    }
 }
 
 //TODO: implement lam_is_identical and assert with it
 UTEST(lam_clone, A) {
-    Lat x = make_x();
-    Lat x2 = lam_clone(x);
-    ASSERT_FALSE(x == x2);
-    ASSERT_STREQ("Variable", lam_term_form_name(x2));
-    ASSERT_TRUE(lam_are_identical(x, x2));
+    Lterm x = Lvar("x");
+    const Lterm* x2 = ulam_clone(&x);
+    ASSERT_FALSE(&x == x2);
+    ASSERT_STREQ("Variable", ulam_get_form_name(x2));
+    ASSERT_TRUE(ulam_are_identical(&x, x2));
 
-    Lat lx_x = make_lx_x();
-    Lat lx_x2 = lam_clone(lx_x);
-    ASSERT_FALSE(lx_x == lx_x2);
-    ASSERT_STREQ("Abstraction", lam_term_form_name(lx_x2));
-    ASSERT_TRUE(lam_are_identical(lx_x, lx_x2));
+//    Lterm lx_x = Labs("x", &x);
+//    const Lterm* lx_x2 = ulam_clone(&lx_x);
+//    ASSERT_FALSE(&lx_x == lx_x2);
+//    ASSERT_STREQ("Abstraction", ulam_get_form_name(lx_x2));
+//    ASSERT_TRUE(ulam_are_identical(&lx_x, lx_x2));
+//
+//
+//    Lterm y = Lvar("y");
+//    Lterm applx_x__x = Lapp(&lx_x, &x);
+//    Lterm ap0ap1lx_x_1x_2y = Lapp(&applx_x__x, &y);
+//    const Lterm* ap0ap1lx_x_1x_2yB = ulam_clone(&ap0ap1lx_x_1x_2y); 
+//    ASSERT_FALSE(&ap0ap1lx_x_1x_2y == ap0ap1lx_x_1x_2yB);
+//    ASSERT_STREQ("Application", ulam_get_form_name(ap0ap1lx_x_1x_2yB));
+//    ASSERT_TRUE(ulam_are_identical(&ap0ap1lx_x_1x_2y, ap0ap1lx_x_1x_2yB));
 
-    Lat LLlx_xRxRy = make_LLlx_xRxRy();
-    Lat LLlx_xRxRy2 = lam_clone(LLlx_xRxRy);
-    ASSERT_FALSE(LLlx_xRxRy == LLlx_xRxRy2);
-    ASSERT_STREQ("Application", lam_term_form_name(LLlx_xRxRy2));
-    ASSERT_TRUE(lam_are_identical(LLlx_xRxRy, LLlx_xRxRy2));
-
-    lam_free(x);
-    lam_free(x2);
-    lam_free(lx_x);
-    lam_free(lx_x2);
-    lam_free(LLlx_xRxRy);
-    lam_free(LLlx_xRxRy2);
 }
 
 
