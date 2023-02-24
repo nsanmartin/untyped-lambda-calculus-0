@@ -5,6 +5,7 @@
 
 /* Lat stands for lamda term */
 
+//typedef struct { const char* s;} Lstr;
 typedef const char* Lstr;
 
 typedef void* Lat;

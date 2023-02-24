@@ -148,41 +148,35 @@ UTEST(rename, A) {
         of(Lapp, f, p) {
             match(**f) {
                 of(Lvar, name) { ASSERT_STREQ("t", *name); }
-                otherwise{}
+                otherwise{ ASSERT_TRUE(0);}
             }
             match(**p) {
-                of(Labs, v, _) {
-                    ASSERT_STREQ("t", *v);
-                }
-                otherwise{}
+                of(Labs, v, _) { ASSERT_STREQ("t", *v); }
+                otherwise{ ASSERT_TRUE(0);}
             }
         }
-        otherwise{}
+        otherwise{ ASSERT_TRUE(0);}
     }
 
     match(app) {
         of(Lapp, _, p) {
             match(**p) {
-                of(Labs, _, b) {
-                    ulam_rename_var(*b, "t", "u");
-                }
-                otherwise{}
+                of(Labs, _, b) { ulam_rename_var(*b, "t", "u"); }
+                otherwise{ ASSERT_TRUE(0);}
             }
         }
-        otherwise{}
+        otherwise{ ASSERT_TRUE(0);}
     }
     ulam_rename_var(&app, "t", "v");
 
     match(app) {
         of(Lapp, _, p) {
             match(**p) {
-                of(Labs, _, b) {
-                    ASSERT_STREQ(lam_get_var_name(*b), "u");
-                }
-                otherwise{}
+                of(Labs, _, b) { ASSERT_STREQ(lam_get_var_name(*b), "u"); }
+                otherwise{ ASSERT_TRUE(0);}
             }
         }
-        otherwise{}
+        otherwise{ ASSERT_TRUE(0);}
     }
 }
 
