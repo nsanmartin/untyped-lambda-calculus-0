@@ -5,8 +5,32 @@
 
 /* Lat stands for lamda term */
 
-//typedef struct { const char* s;} Lstr;
-typedef const char* Lstr;
+typedef struct { const char* s; int alloc; } Lstr;
+//typedef const char* Lstr;
+
+#define ulam_str(S) (Lstr){.s=S}
+#define ulam_allocated_str(S) (Lstr){.s=S, .alloc=1}
+
+// #define ulam_str_to_cstr(LS) (char*)LS.s
+static inline char* ulam_str_to_cstr(Lstr s) {
+    return (char*)s.s;
+}
+
+//#define ulam_strdup(S)  ulam_allocated_str(strdup(ulam_str_to_cstr(S)))
+static inline Lstr ulam_strdup(Lstr s) {
+    if(s.alloc) return ulam_allocated_str(strdup(ulam_str_to_cstr(s)));
+    return ulam_str(s.s);
+
+}
+
+static inline bool ulam_str_null(Lstr s) {
+    return !s.s;
+}
+static inline void ulam_str_free(Lstr s) { if (s.alloc) free((char*)s.s); }
+
+static inline int ulam_strcmp(Lstr s, Lstr t) {
+    return strcmp(ulam_str_to_cstr(s), ulam_str_to_cstr(t));
+}
 
 typedef void* Lat;
 typedef enum { LATVAR = 0, LATABS = 1, LATAPP = 2 }       LatForm;
@@ -23,30 +47,22 @@ datatype(
 );
 
 Lstr ulam_get_form_name(const Lterm t[static 1]) ;
+const char* ulam_get_form_name_cstr(const Lterm t[static 1]) ;
 bool ulam_is_var_free_in(const Lterm t[static 1], Lstr n) ;
-int ulam_max_reserved_var_len(Lterm t[static 1]) ;
-Lstr ulam_get_fresh_var_name(Lterm t[static 1]) ;
+int ulam_max_reserved_var_len(const Lterm t[static 1]) ;
+Lstr ulam_get_fresh_var_name(const Lterm t[static 1]) ;
 Lterm* ulam_clone(const Lterm t[static 1]) ;
 bool ulam_are_identical(const Lterm t[static 1], const Lterm u[static 1]);
 int ulam_rename_var(Lterm t[static 1], Lstr varname, Lstr newname) ;
 
-LatForm lam_term_form(Lat t);
-Lstr lam_term_form_name(Lat t);
-Lat lam_make_var(Lstr name);
-Lat lam_make_abs(Lstr var_name, Lat body);
-Lat lam_make_app(Lat fun, Lat param);
 
-bool is_var_free_in(Lat t, Lstr var_name);
-void lam_free(Lat t);
+Lterm* ulam_new_app(Lterm fun[static 1], Lterm param[static 1]) ;
+Lterm* ulam_new_abs(Lstr x, Lterm body[static 1]) ;
+Lterm* ulam_new_var(Lstr x) ;
 
-int max_reserved_var_len(Lat t) ;
-Lstr get_fresh_var_name(Lat t) ;
-void lam_rename_var(Lat t, Lstr var_name, Lstr new_name) ;
-Lstr lam_get_var_name(Lat t) ;
-Lstr lam_get_abs_var_name(Lat t) ;
+Lterm*
+ulam_substitute(const Lterm t[static 1], Lstr x, const Lterm s[static 1]);
 
-Lat lam_substitute(Lat t, Lstr var_name, Lat s);
+void ulam_free_term(Lterm* t) ;
 
-Lat lam_clone(Lat t);
-bool lam_are_identical(Lat t, Lat u) ;
 #endif // __LAM_H_
