@@ -5,16 +5,16 @@
 
 #include "lam.h"
 
-#define LOG_INVALID_LTERM \
-        fprintf( \
-            stderr, \
-            "\033[91m" \
-            "Fatal error:\n============" \
+#define LOG_INVALID_LTERM                                              \
+        fprintf(                                                       \
+            stderr,                                                    \
+            "\033[91m"                                                 \
+            "Fatal error:\n============"                               \
             "\033[0m" \
-            "\n\tInvalid term form.") \
+            "\n\tInvalid term form.")
 
-#define LOG_INVALID_LTERM_AND_EXIT \
-    LOG_INVALID_LTERM; exit(EXIT_FAILURE) \
+#define LOG_INVALID_LTERM_AND_EXIT                                     \
+    LOG_INVALID_LTERM; exit(EXIT_FAILURE)
 
 long used_fresh_vars = 0;
 
