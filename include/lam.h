@@ -23,6 +23,13 @@ static inline Lstr ulam_strdup(Lstr s) {
 
 }
 
+
+static inline const char* ulam_strdup_str(Lstr s) {
+    if(s.alloc) return strdup(ulam_str_to_cstr(s));
+    return s.s;
+
+}
+
 static inline bool ulam_str_null(Lstr s) {
     return !s.s;
 }
@@ -31,12 +38,6 @@ static inline void ulam_str_free(Lstr s) { if (s.alloc) free((char*)s.s); }
 static inline int ulam_strcmp(Lstr s, Lstr t) {
     return strcmp(ulam_str_to_cstr(s), ulam_str_to_cstr(t));
 }
-
-typedef void* Lat;
-typedef enum { LATVAR = 0, LATABS = 1, LATAPP = 2 }       LatForm;
-typedef struct { LatForm form; Lstr name; }               LatVar;
-typedef struct { LatForm form; Lstr var_name; Lat body; } LatAbs;
-typedef struct { LatForm form; Lat fun, param; }          LatApp;
 
 
 datatype(
@@ -64,5 +65,8 @@ Lterm*
 ulam_substitute(const Lterm t[static 1], Lstr x, const Lterm s[static 1]);
 
 void ulam_free_term(Lterm* t) ;
+
+void ulam_print_term(const Lterm t[static 1]) ;
+char* ulam_term_to_string(const Lterm t[static 1]) ;
 
 #endif // __LAM_H_

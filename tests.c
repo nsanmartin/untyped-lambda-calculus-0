@@ -20,6 +20,15 @@
 #define RES_CHAR4 ulam_str("####")
 #define RES_CHAR5 ulam_str("#####")
 
+#define ASSERT_LTERM_EQ_STR(LTERM, STR)                                 \
+    do {                                                                \
+        char* tstr;                                                     \
+        tstr = ulam_term_to_string(&LTERM);                             \
+        ASSERT_NE((intptr_t)tstr, 0);                                   \
+        ASSERT_STREQ(STR, tstr);                                        \
+        free(tstr);                                                     \
+    } while (0);
+
 UTEST_MAIN()
 
 UTEST(term_form_name,A) {
@@ -31,6 +40,10 @@ UTEST(term_form_name,A) {
 
     Lterm applx_x__x = Lapp(&lx_x, &x);
     ASSERT_STREQ(ulam_str_to_cstr(ulam_get_form_name(&applx_x__x)), "Application");
+
+    ASSERT_LTERM_EQ_STR(x, "x");
+    ASSERT_LTERM_EQ_STR(lx_x, "(\\x.x)");
+    ASSERT_LTERM_EQ_STR(applx_x__x, "((\\x.x) x)");
 }
 
 
@@ -60,6 +73,12 @@ UTEST(lam_free_vars, Abs) {
     ASSERT_FALSE(ulam_is_var_free_in(&lx_ly_x, X));
     ASSERT_FALSE(ulam_is_var_free_in(&lx_ly_x, Y));
     ASSERT_FALSE(ulam_is_var_free_in(&lx_ly_x, Z));
+
+
+    ASSERT_LTERM_EQ_STR(ly_x, "(\\y.x)");
+    ASSERT_LTERM_EQ_STR(lz_ly_x, "(\\z.(\\y.x))");
+    ASSERT_LTERM_EQ_STR(lz_lx_x, "(\\z.(\\x.x))");
+    ASSERT_LTERM_EQ_STR(lx_ly_x, "(\\x.(\\y.x))");
 }
 
 
@@ -82,14 +101,21 @@ UTEST(LamTermsFixture, free_vars_app) {
     ASSERT_TRUE(ulam_is_var_free_in(&applx_x__x, X));
 
     Lterm ly_x = Labs(Y, &x);
-    Lterm applx_x__lx_y = Lapp(&lx_x, &ly_x);
-    ASSERT_FALSE(ulam_is_var_free_in(&applx_x__lx_y, Y));
-    ASSERT_TRUE(ulam_is_var_free_in(&applx_x__lx_y, X));
+    Lterm applx_x__ly_x = Lapp(&lx_x, &ly_x);
+    ASSERT_FALSE(ulam_is_var_free_in(&applx_x__ly_x, Y));
+    ASSERT_TRUE(ulam_is_var_free_in(&applx_x__ly_x, X));
 
     Lterm ap1ap0lx_x_0lx_y_1y = Lapp(&applx_x__x, &y);
     ASSERT_FALSE(ulam_is_var_free_in(&ap1ap0lx_x_0lx_y_1y , FRESH_VAR));
     ASSERT_TRUE(ulam_is_var_free_in(&ap1ap0lx_x_0lx_y_1y , X));
     ASSERT_TRUE(ulam_is_var_free_in(&ap1ap0lx_x_0lx_y_1y , Y));
+
+
+    ASSERT_LTERM_EQ_STR(xx, "(x x)");
+    ASSERT_LTERM_EQ_STR(xy, "(x y)");
+    ASSERT_LTERM_EQ_STR(applx_x__ly_x, "((\\x.x) (\\y.x))");
+    ASSERT_LTERM_EQ_STR(ap1ap0lx_x_0lx_y_1y, "(((\\x.x) x) y)");
+
 }
 
 UTEST(reserved_char_count, A) {
@@ -112,19 +138,33 @@ UTEST(reserved_char_count, A) {
 
     ulam_str_free(fresh2);
     ulam_str_free(fresh5);
+
+    ASSERT_LTERM_EQ_STR(x, "#");
+    ASSERT_LTERM_EQ_STR(x4, "####");
+    ASSERT_LTERM_EQ_STR(lx_x4, "(\\####.####)");
+    ASSERT_LTERM_EQ_STR(x4x, "(#### #)");
+
 }
 
 UTEST(rename, A) {
+    /// x, y
     Lterm t = Lvar(X);
+    ASSERT_LTERM_EQ_STR(t, "x");
     ulam_rename_var(&t, X, Y);
+    ASSERT_LTERM_EQ_STR(t, "y");
     match(t) {
         of(Lvar, name) { ASSERT_STREQ("y", ulam_str_to_cstr(*name)); }
         otherwise{}
     }
 
+
+    /// y, \y.y, \z.z
     Lterm y = Lvar(Y);
     Lterm ly_y = Labs(Y, &y);
+    ASSERT_LTERM_EQ_STR(y, "y");
+    ASSERT_LTERM_EQ_STR(ly_y, "(\\y.y)");
     ulam_rename_var(&ly_y, Y, Z);
+    ASSERT_LTERM_EQ_STR(ly_y, "(\\z.z)");
     match(ly_y) {
         of(Labs, x, b) {
             ASSERT_STREQ("z", ulam_str_to_cstr(*x));
@@ -136,10 +176,15 @@ UTEST(rename, A) {
         otherwise{}
     }
 
+    /// y, \y.y, (y \y.y)
     Lterm y2 = Lvar(Y);
     Lterm ly_y2 = Labs(Y, &y2);
     Lterm app = Lapp(&y2, &ly_y2);
+    ASSERT_LTERM_EQ_STR(y2, "y");
+    ASSERT_LTERM_EQ_STR(ly_y2, "(\\y.y)");
+    ASSERT_LTERM_EQ_STR(app, "(y (\\y.y))");
     ulam_rename_var(&app, Y, T);
+    ASSERT_LTERM_EQ_STR(app, "(t (\\t.t))");
     match(app) {
         of(Lapp, f, p) {
             match(**f) {
@@ -163,6 +208,7 @@ UTEST(rename, A) {
         }
         otherwise{ ASSERT_TRUE(0);}
     }
+    ASSERT_LTERM_EQ_STR(app, "(t (\\t.t))");
     ulam_rename_var(&app,T, V);
 
     match(app) {

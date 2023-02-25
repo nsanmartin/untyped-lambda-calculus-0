@@ -1,6 +1,7 @@
+#define _GNU_SOURCE
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 #include <stdbool.h>
 
 #include "lam.h"
@@ -135,7 +136,8 @@ int ulam_rename_var(Lterm t[static 1], Lstr varname, Lstr newname) {
         of(Lvar, name) {
             if (ulam_strcmp(varname, *name) == 0) {
                 ulam_str_free(*name);
-                *name = ulam_strdup(newname);
+                //*name = ulam_strdup(newname);
+                name->s = ulam_strdup_str(newname);
                 if (ulam_str_null(*name)) { return -1; }
 
             }
@@ -294,3 +296,67 @@ bool ulam_are_identical(const Lterm t[static 1], const Lterm u[static 1]) {
     LOG_INVALID_LTERM_AND_EXIT ;
 }
 
+void ulam_print_term(const Lterm t[static 1]) {
+    match(*t) {
+        of(Lvar, name) {
+            printf("%s", ulam_str_to_cstr(*name));
+            return;
+        }
+        of(Labs, varname, body) {
+            printf("(\\%s.", ulam_str_to_cstr(*varname));
+            ulam_print_term(*body);
+            printf(")");
+            return;
+        }
+        of(Lapp, fun, param) {
+            printf("(");
+            ulam_print_term(*fun);
+            printf(" ");
+            ulam_print_term(*param);
+            printf(")");
+            return;
+        }
+    }
+    LOG_INVALID_LTERM_AND_EXIT ;
+}
+
+
+char* ulam_term_to_string(const Lterm t[static 1]) {
+    match(*t) {
+        of(Lvar, name) {
+            char* rv;
+            if (asprintf(&rv, "%s", ulam_str_to_cstr(*name)) == -1) {
+                return 0x0;
+            }
+            return rv;
+        }
+        of(Labs, varname, body) {
+            char* bstr = ulam_term_to_string(*body);
+            if (!bstr) {
+                return 0x0;
+            }
+
+            char* rv;
+            if(asprintf(&rv, "(\\%s.%s)", ulam_str_to_cstr(*varname), bstr) == -1) {
+                return 0x0;
+            }
+            free(bstr);
+            return rv;
+        }
+        of(Lapp, fun, param) {
+            char* fstr = ulam_term_to_string(*fun);
+            if (!fstr) { return 0x0; }
+            char* pstr = ulam_term_to_string(*param);
+            if (!pstr) { free(fstr); return 0x0; }
+
+            char* rv;
+            if(asprintf(&rv, "(%s %s)", fstr, pstr) == -1) {
+                return 0x0;
+            }
+            free(fstr);
+            free(pstr);
+            return rv;
+        }
+    }
+    LOG_INVALID_LTERM_AND_EXIT ;
+}
