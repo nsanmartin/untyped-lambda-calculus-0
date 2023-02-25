@@ -205,6 +205,9 @@ UTEST(lam_clone, A) {
     ASSERT_STREQ("Application", ulam_get_form_name_cstr(ap0ap1lx_x_1x_2yB));
     ASSERT_TRUE(ulam_are_identical(&ap0ap1lx_x_1x_2y, ap0ap1lx_x_1x_2yB));
 
+    ulam_free_term((Lterm*)x2);
+    ulam_free_term((Lterm*)ap0ap1lx_x_1x_2yB);
+    ulam_free_term((Lterm*)lx_x2);
 }
 
 

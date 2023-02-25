@@ -17,6 +17,8 @@ run-tests: ./build/tests
 $(BUILD_DIR)/tests: tests.c $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^
 
+$(BUILD_DIR)/tests-coverage: tests.c $(OBJS)
+	$(CC) -fprofile-arcs -ftest-coverage -O0 $(CFLAGS) -o $@ $^
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS) 
 	$(CC) $(MKFLG) -c -o $@ $< $(CFLAGS) 

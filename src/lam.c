@@ -227,23 +227,35 @@ ulam_substitute(const Lterm t[static 1], Lstr x, const Lterm s[static 1])
                     }
                     ulam_rename_var((Lterm*)r, *varname, fresh_name);
                     ulam_str_free(fresh_name);
-                    ulam_free_term((Lterm*)r);
                 }
 
-                return ulam_new_abs(
-                    *varname, ulam_substitute(*body, x, r)
-                );
-
-            } else {
-                //x is captured by \x
+                Lterm* subst = ulam_substitute(*body, x, r);
+                if (s != r) { ulam_free_term((Lterm*)r); }
+                if (!subst) { return 0x0; }
+                Lstr vn = ulam_strdup(*varname);
+                if (ulam_str_null(vn)) {
+                    ulam_free_term(subst); return 0x0;
+                }
+                Lterm* rv = calloc(1, sizeof (Lterm));
+                if (!rv) {
+                    ulam_str_free(vn); ulam_free_term(subst); return 0x0;
+                }
+                *rv = Labs(vn, subst);
+                return rv;
+            } else { //x is captured by \x
                 return ulam_clone(t);
             }
         }
 
         of(Lapp, f, p)  {
-            return ulam_new_app(
-                ulam_substitute(*f, x, s), ulam_substitute(*p, x, s)
-            );
+            Lterm* f_ = ulam_substitute(*f, x, s);
+            if (!f_) { return 0x0; }
+            Lterm* p_ = ulam_substitute(*p, x, s);
+            if (!p_) { ulam_free_term(f_); return 0x0; }
+            Lterm* rv = calloc(1, sizeof(Lterm));
+            if (!rv) { ulam_free_term(f_); ulam_free_term(p_); return 0x0; }
+            *rv = Lapp(f_, p_);
+            return rv;
         }
     }
     LOG_INVALID_LTERM_AND_EXIT ;
