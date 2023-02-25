@@ -32,7 +32,7 @@
 UTEST_MAIN()
 
 UTEST(term_form_name,A) {
-    Lterm x = Lvar(X);
+    Lterm x = LatVar(X);
     ASSERT_STREQ(ulam_str_to_cstr(ulam_get_form_name(&x)), "Variable");
 
     Lterm lx_x = Labs(X, &x);
@@ -50,7 +50,7 @@ UTEST(term_form_name,A) {
 
 UTEST(lam_free_vars, Abs) {
 
-    Lterm x = Lvar(X);
+    Lterm x = LatVar(X);
     Lterm lx_x = Labs(X, &x);
     ASSERT_FALSE(ulam_is_var_free_in(&lx_x, X));
     ASSERT_FALSE(ulam_is_var_free_in(&lx_x, FRESH_VAR));
@@ -83,12 +83,12 @@ UTEST(lam_free_vars, Abs) {
 
 
 UTEST(LamTermsFixture, free_vars_app) {
-    Lterm x = Lvar(X);
+    Lterm x = LatVar(X);
     Lterm xx = Lapp(&x, &x);
     ASSERT_FALSE(ulam_is_var_free_in(&xx, Y));
     ASSERT_TRUE(ulam_is_var_free_in(&xx, X));
 
-    Lterm y = Lvar(Y);
+    Lterm y = LatVar(Y);
     Lterm xy = Lapp(&x, &y);
 
     ASSERT_FALSE(ulam_is_var_free_in(&xy, FRESH_VAR));
@@ -119,8 +119,8 @@ UTEST(LamTermsFixture, free_vars_app) {
 }
 
 UTEST(reserved_char_count, A) {
-    Lterm x = Lvar(RES_CHAR1);
-    Lterm x4 = Lvar(RES_CHAR4);
+    Lterm x = LatVar(RES_CHAR1);
+    Lterm x4 = LatVar(RES_CHAR4);
     ASSERT_EQ(ulam_max_reserved_var_len(&x), 1); 
     ASSERT_EQ(ulam_max_reserved_var_len(&x4), 4); 
 
@@ -148,18 +148,18 @@ UTEST(reserved_char_count, A) {
 
 UTEST(rename, A) {
     /// x, y
-    Lterm t = Lvar(X);
+    Lterm t = LatVar(X);
     ASSERT_LTERM_EQ_STR(t, "x");
     ulam_rename_var(&t, X, Y);
     ASSERT_LTERM_EQ_STR(t, "y");
     match(t) {
-        of(Lvar, name) { ASSERT_STREQ("y", ulam_str_to_cstr(*name)); }
+        of(LatVar, name) { ASSERT_STREQ("y", ulam_str_to_cstr(*name)); }
         otherwise{}
     }
 
 
     /// y, \y.y, \z.z
-    Lterm y = Lvar(Y);
+    Lterm y = LatVar(Y);
     Lterm ly_y = Labs(Y, &y);
     ASSERT_LTERM_EQ_STR(y, "y");
     ASSERT_LTERM_EQ_STR(ly_y, "(\\y.y)");
@@ -169,7 +169,7 @@ UTEST(rename, A) {
         of(Labs, x, b) {
             ASSERT_STREQ("z", ulam_str_to_cstr(*x));
             match(**b) {
-                of(Lvar, name) { ASSERT_STREQ("z", ulam_str_to_cstr(*name)); }
+                of(LatVar, name) { ASSERT_STREQ("z", ulam_str_to_cstr(*name)); }
                 otherwise{}
             }
         }
@@ -177,7 +177,7 @@ UTEST(rename, A) {
     }
 
     /// y, \y.y, (y \y.y)
-    Lterm y2 = Lvar(Y);
+    Lterm y2 = LatVar(Y);
     Lterm ly_y2 = Labs(Y, &y2);
     Lterm app = Lapp(&y2, &ly_y2);
     ASSERT_LTERM_EQ_STR(y2, "y");
@@ -188,7 +188,7 @@ UTEST(rename, A) {
     match(app) {
         of(Lapp, f, p) {
             match(**f) {
-                of(Lvar, name) { ASSERT_STREQ("t", ulam_str_to_cstr(*name)); }
+                of(LatVar, name) { ASSERT_STREQ("t", ulam_str_to_cstr(*name)); }
                 otherwise{ ASSERT_TRUE(0);}
             }
             match(**p) {
@@ -216,7 +216,7 @@ UTEST(rename, A) {
             match(**p) {
                 of(Labs, _, b) {
                     match(**b) {
-                        of(Lvar, name) {
+                        of(LatVar, name) {
                             ASSERT_STREQ(ulam_str_to_cstr(*name), "u");
                         }
                         otherwise{ ASSERT_TRUE(0);}
@@ -230,7 +230,7 @@ UTEST(rename, A) {
 }
 
 UTEST(lam_clone, A) {
-    Lterm x = Lvar(X);
+    Lterm x = LatVar(X);
     const Lterm* x2 = ulam_clone(&x);
     ASSERT_FALSE(&x == x2);
     ASSERT_STREQ("Variable", ulam_get_form_name_cstr(x2));
@@ -243,7 +243,7 @@ UTEST(lam_clone, A) {
     ASSERT_TRUE(ulam_are_identical(&lx_x, lx_x2));
 
 
-    Lterm y = Lvar(Y);
+    Lterm y = LatVar(Y);
     Lterm applx_x__x = Lapp(&lx_x, &x);
     Lterm ap0ap1lx_x_1x_2y = Lapp(&applx_x__x, &y);
     const Lterm* ap0ap1lx_x_1x_2yB = ulam_clone(&ap0ap1lx_x_1x_2y); 
@@ -258,8 +258,8 @@ UTEST(lam_clone, A) {
 
 
 UTEST(substitute, base_unchanged) {
-    Lterm x = Lvar(X);
-    Lterm s = Lvar(Y);
+    Lterm x = LatVar(X);
+    Lterm s = LatVar(Y);
     Lterm* unchanged_var = ulam_substitute(&x, Y, &s);
     ASSERT_TRUE(ulam_are_identical(&x , unchanged_var));
 
@@ -267,9 +267,9 @@ UTEST(substitute, base_unchanged) {
     Lterm* unchanged_abs = ulam_substitute(&lx_x, Y, &s);
     ASSERT_TRUE(ulam_are_identical(&lx_x , unchanged_abs));
 
-    Lterm y = Lvar(Y);
+    Lterm y = LatVar(Y);
     Lterm lx_y = Labs(X, &y);
-    Lterm z = Lvar(Z);
+    Lterm z = LatVar(Z);
     Lterm* changed_abs = ulam_substitute(&lx_y, Y, &z);
     ASSERT_FALSE(ulam_are_identical(&lx_y , changed_abs));
 
@@ -287,14 +287,14 @@ UTEST(substitute, base_unchanged) {
 }
 
 UTEST(substitute, A) {
-    Lterm x = Lvar(X);
+    Lterm x = LatVar(X);
     Lterm ly_x = Labs(Y, &x);
     Lterm lx_ly_x = Labs(X, &ly_x);
     Lterm* substituted = ulam_substitute(&x, X, &lx_ly_x);
     ASSERT_TRUE(ulam_are_identical(substituted, &lx_ly_x));
 
 
-    Lterm y = Lvar(Y);
+    Lterm y = LatVar(Y);
     ASSERT_FALSE(ulam_are_identical(&y, &lx_ly_x));
 
     Lterm lx_x = Labs(X, &x);

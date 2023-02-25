@@ -42,7 +42,7 @@ static inline int ulam_strcmp(Lstr s, Lstr t) {
 
 datatype(
     Lterm,
-    (Lvar, Lstr),
+    (LatVar, Lstr),
     (Labs, Lstr, Lterm*),
     (Lapp, Lterm*, Lterm*)
 );

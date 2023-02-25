@@ -27,7 +27,7 @@ long used_fresh_vars = 0;
 
 Lstr ulam_get_form_name(const Lterm t[static 1]) {
     match(*t) {
-        of(Lvar, _) return ulam_str("Variable");
+        of(LatVar, _) return ulam_str("Variable");
         of(Labs, _, _) return ulam_str("Abstraction");
         of(Lapp, _, _) return ulam_str("Application");
     }
@@ -50,7 +50,7 @@ Lterm* ulam_new_var(Lstr x) {
     if (ulam_str_null(n)) { return 0x0; } 
     Lterm* rv = calloc(1, sizeof (Lterm));
     if (!rv) { ulam_str_free(n); return 0x0; }
-    *rv = Lvar(n);
+    *rv = LatVar(n);
     return rv;
 }
 
@@ -79,7 +79,7 @@ Lterm* ulam_new_app(Lterm fun[static 1], Lterm param[static 1]) {
 
 bool ulam_is_var_free_in(const Lterm t[static 1], Lstr n) {
     match(*t) {
-        of(Lvar, name) return ulam_strcmp(n, *name) == 0;
+        of(LatVar, name) return ulam_strcmp(n, *name) == 0;
         of(Labs, varname, body)
             return ulam_strcmp(n, *varname) != 0
                 && ulam_is_var_free_in(*body, n);
@@ -102,7 +102,7 @@ int count_trailing_left(Lstr s, const char c) {
 
 int ulam_max_reserved_var_len(const Lterm t[static 1]) {
     match(*t) {
-        of(Lvar, name) 
+        of(LatVar, name) 
             return count_trailing_left(*name, var_reserved_char);
         of(Labs, _, body)
             return ulam_max_reserved_var_len(*body); //TODO: use S \ x if same?
@@ -133,7 +133,7 @@ Lstr ulam_get_fresh_var_name(const Lterm t[static 1]) {
 
 int ulam_rename_var(Lterm t[static 1], Lstr varname, Lstr newname) {
     match(*t) {
-        of(Lvar, name) {
+        of(LatVar, name) {
             if (ulam_strcmp(varname, *name) == 0) {
                 ulam_str_free(*name);
                 //*name = ulam_strdup(newname);
@@ -166,7 +166,7 @@ int ulam_rename_var(Lterm t[static 1], Lstr varname, Lstr newname) {
 //
 void ulam_free_term(Lterm* t) {
     match(*t) {
-        of(Lvar, name) {
+        of(LatVar, name) {
             ulam_str_free(*name);
             free(t);
             return;
@@ -191,7 +191,7 @@ void ulam_free_term(Lterm* t) {
 
 Lterm* ulam_clone(const Lterm t[static 1]) {
     match(*t) {
-        of(Lvar, name) return ulam_new_var(*name);
+        of(LatVar, name) return ulam_new_var(*name);
         of(Labs, varname, body) return ulam_new_abs(*varname, *body);
         of(Lapp, fun, param)  return ulam_new_app(*fun, *param);
     }
@@ -207,7 +207,7 @@ Lterm*
 ulam_substitute(const Lterm t[static 1], Lstr x, const Lterm s[static 1])
 {
     match(*t) {
-        of(Lvar, name) {
+        of(LatVar, name) {
             if (ulam_strcmp(*name, x) == 0) {
                 return ulam_clone(s);
             } else {
@@ -266,9 +266,9 @@ ulam_substitute(const Lterm t[static 1], Lstr x, const Lterm s[static 1])
 
 bool ulam_are_identical(const Lterm t[static 1], const Lterm u[static 1]) {
     match(*t) {
-        of(Lvar, tname) {
+        of(LatVar, tname) {
             match(*u) {
-                of(Lvar, uname) {
+                of(LatVar, uname) {
                     return ulam_strcmp(*tname, *uname) == 0;
                 }
                 otherwise return false;
@@ -298,7 +298,7 @@ bool ulam_are_identical(const Lterm t[static 1], const Lterm u[static 1]) {
 
 void ulam_print_term(const Lterm t[static 1]) {
     match(*t) {
-        of(Lvar, name) {
+        of(LatVar, name) {
             printf("%s", ulam_str_to_cstr(*name));
             return;
         }
@@ -323,7 +323,7 @@ void ulam_print_term(const Lterm t[static 1]) {
 
 char* ulam_term_to_string(const Lterm t[static 1]) {
     match(*t) {
-        of(Lvar, name) {
+        of(LatVar, name) {
             char* rv;
             if (asprintf(&rv, "%s", ulam_str_to_cstr(*name)) == -1) {
                 return 0x0;
