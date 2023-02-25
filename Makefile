@@ -1,4 +1,4 @@
-CFLAGS := -g -Wall -Werror -pedantic \
+CFLAGS := -g -Wall -Werror -pedantic -fanalyzer \
 		  -Iinclude -Iutest.h -Idatatype99 -Imetalang99/include
 
 CC=gcc
@@ -17,11 +17,8 @@ run-tests: ./build/tests
 $(BUILD_DIR)/tests: tests.c $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^
 
-$(BUILD_DIR)/tests-coverage: tests.c $(OBJS)
-	$(CC) -fprofile-arcs -ftest-coverage -O0 $(CFLAGS) -o $@ $^
-
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS) 
-	$(CC) $(MKFLG) -c -o $@ $< $(CFLAGS) 
+	$(CC) -c -o $@ $< $(CFLAGS) 
 
 clean:
 	find ./build/ -type f -delete
