@@ -1,4 +1,5 @@
 #define _GNU_SOURCE
+#include <gc/gc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -51,8 +52,8 @@ const char* lam_get_form_name_cstr(const Lterm t[static 1]) {
 Lterm* lam_new_var(Lstr x) {
     Lstr n = ulam_strdup(x);
     if (ulam_str_null(n)) { return 0x0; } 
-    Lterm* rv = calloc(1, sizeof (Lterm));
-    if (!rv) { ulam_str_free(n); return 0x0; }
+    Lterm* rv = GC_malloc(sizeof (*rv));
+    if (!rv) { return 0x0; }
     *rv = (Lterm) { .tag=Lvartag, . var = (Lvar) { .name = n }};
     return rv;
 }
@@ -61,9 +62,9 @@ Lterm* lam_new_abs(Lstr x, Lterm body[static 1]) {
     Lstr vn = ulam_strdup(x);
     if (ulam_str_null(vn)) { return 0x0; } 
     Lterm* b = lam_clone(body);
-    if (!b) { ulam_str_free(vn); return 0x0; }
-    Lterm* rv = calloc(1, sizeof (Lterm));
-    if (!rv) { ulam_str_free(vn); lam_free_term(b); return 0x0; }
+    if (!b) {  return 0x0; }
+    Lterm* rv = GC_malloc(sizeof (*rv));
+    if (!rv) {  return 0x0; }
     *rv = (Lterm) { .tag = Labstag, .abs= (Labs) {.vname=vn, .body=b}};
     return rv;
 }
@@ -72,9 +73,9 @@ Lterm* lam_new_app(Lterm fun[static 1], Lterm param[static 1]) {
     Lterm* f = lam_clone(fun);
     if (!f) { return 0x0; }
     Lterm* p = lam_clone(param);
-    if (!p) { lam_free_term(f); return 0x0; }
-    Lterm* rv = calloc(1, sizeof(*rv));
-    if (!rv) { lam_free_term(f); lam_free_term(p); return 0x0; }
+    if (!p) {  return 0x0; }
+    Lterm* rv = GC_malloc(sizeof(*rv));
+    if (!rv) {  return 0x0; }
     *rv = (Lterm) {.tag=Lapptag, .app=(Lapp){.fun=f, .param=p}};
     return rv;
 }
@@ -131,7 +132,7 @@ int lam_max_reserved_var_len(const Lterm t[static 1]) {
 
 Lstr lam_get_fresh_var_name(const Lterm t[static 1]) {
     const int len = lam_max_reserved_var_len(t) + 1;
-    char* rv = malloc(sizeof(char) * (len+ 1));
+    char* rv = GC_malloc(sizeof(*rv) * (len+ 1));
     if (!rv) { return ulam_str(0x0); }
     memset(rv, var_reserved_char, len);
     rv[len] = '\0';
@@ -148,9 +149,7 @@ int lam_rename_var(Lterm t[static 1], Lstr varname, Lstr newname) {
     switch(t->tag) {
         case Lvartag: {
             if (ulam_strcmp(varname, t->var.name) == 0) {
-                ulam_str_free(t->var.name);
-                //*name = ulam_strdup(newname);
-                t->var.name.s = ulam_strdup_str(newname);
+                t->var.name = ulam_strdup(newname);
                 if (ulam_str_null(t->var.name)) { return -1; }
 
             }
@@ -158,8 +157,7 @@ int lam_rename_var(Lterm t[static 1], Lstr varname, Lstr newname) {
         }
         case Labstag: {
             if (ulam_strcmp(t->abs.vname, varname) == 0) {
-                ulam_str_free(t->abs.vname);
-                t->abs.vname.s = ulam_strdup_str(newname);
+                t->abs.vname = ulam_strdup(newname);
                 if (ulam_str_null(t->abs.vname)) { return -1; }
             }
             return lam_rename_var(t->abs.body, varname, newname);
@@ -176,28 +174,28 @@ int lam_rename_var(Lterm t[static 1], Lstr varname, Lstr newname) {
 //todo: free Lstr from Lterm (without freeing terms)
 //
 
-void lam_free_term(Lterm* t) {
-    switch(t->tag) {
-        case Lvartag: {
-            ulam_str_free(t->var.name);
-            free(t);
-            break;
-        }
-        case Labstag: {
-            ulam_str_free(t->abs.vname);
-            lam_free_term(t->abs.body);
-            free(t);
-            break;
-        }
-        case Lapptag: {
-            lam_free_term(t->app.fun);
-            lam_free_term(t->app.param);
-            free(t);
-            break;
-        }
-        default: LOG_INVALID_LTERM_AND_EXIT ;
-    }
-}
+//void lam_free_term(Lterm* t) {
+//    switch(t->tag) {
+//        case Lvartag: {
+//            ulam_str_free(t->var.name);
+//            free(t);
+//            break;
+//        }
+//        case Labstag: {
+//            ulam_str_free(t->abs.vname);
+//            lam_free_term(t->abs.body);
+//            free(t);
+//            break;
+//        }
+//        case Lapptag: {
+//            lam_free_term(t->app.fun);
+//            lam_free_term(t->app.param);
+//            free(t);
+//            break;
+//        }
+//        default: LOG_INVALID_LTERM_AND_EXIT ;
+//    }
+//}
 
 
 
@@ -235,24 +233,16 @@ lam_substitute(const Lterm t[static 1], Lstr x, const Lterm s[static 1]) {
                     r = lam_clone(r);
                     if (!r) { return 0x0; }
                     Lstr fresh_name = lam_get_fresh_var_name(r);
-                    if (ulam_str_null(fresh_name)) {
-                        lam_free_term((Lterm*)r); return 0x0;
-                    }
+                    if (ulam_str_null(fresh_name)) { return 0x0; }
                     lam_rename_var((Lterm*)r, t->abs.vname, fresh_name);
-                    ulam_str_free(fresh_name);
                 }
 
                 Lterm* subst = lam_substitute(t->abs.body, x, r);
-                if (s != r) { lam_free_term((Lterm*)r); }
                 if (!subst) { return 0x0; }
                 Lstr vn = ulam_strdup(t->abs.vname);
-                if (ulam_str_null(vn)) {
-                    lam_free_term(subst); return 0x0;
-                }
-                Lterm* rv = calloc(1, sizeof (*rv));
-                if (!rv) {
-                    ulam_str_free(vn); lam_free_term(subst); return 0x0;
-                }
+                if (ulam_str_null(vn)) { return 0x0; }
+                Lterm* rv = GC_malloc(sizeof (*rv));
+                if (!rv) { return 0x0; }
                 *rv = (Lterm) {
                     .tag=Labstag,
                     .abs=(Labs) {.vname=vn, .body=subst}
@@ -266,9 +256,9 @@ lam_substitute(const Lterm t[static 1], Lstr x, const Lterm s[static 1]) {
             Lterm* f_ = lam_substitute(t->app.fun, x, s);
             if (!f_) { return 0x0; }
             Lterm* p_ = lam_substitute(t->app.param, x, s);
-            if (!p_) { lam_free_term(f_); return 0x0; }
-            Lterm* rv = calloc(1, sizeof(*rv));
-            if (!rv) { lam_free_term(f_); lam_free_term(p_); return 0x0; }
+            if (!p_) {  return 0x0; }
+            Lterm* rv = GC_malloc(sizeof(*rv));
+            if (!rv) {  return 0x0; }
             *rv = (Lterm) {
                 .tag=Lapptag,
                 .app = (Lapp){ .fun=f_, .param=p_ }
@@ -349,14 +339,13 @@ char* lam_term_to_string(const Lterm t[static 1]) {
             ) {
                 return 0x0;
             }
-            free(bstr);
             return rv;
         }
         case Lapptag: {
             char* fstr = lam_term_to_string(t->app.fun);
             if (!fstr) { return 0x0; }
             char* pstr = lam_term_to_string(t->app.param);
-            if (!pstr) { free(fstr); return 0x0; }
+            if (!pstr) {  return 0x0; }
 
             char* rv;
             if(asprintf(&rv, "(%s %s)", fstr, pstr) == -1) {

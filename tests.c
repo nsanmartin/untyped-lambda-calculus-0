@@ -31,7 +31,6 @@
         ASSERT_NE((intptr_t)tstr, 0);                                   \
         ASSERT_LTERM_NOTNULL(tstr)                                      \
         ASSERT_STREQ(STR, tstr);                                        \
-        free(tstr);                                                     \
     } while (0);
 
 #define ASSERT_LVAR(T)                                                  \
@@ -149,9 +148,6 @@ UTEST(reserved_char_count, A) {
     Lstr fresh5 = lam_get_fresh_var_name(&x4);
     ASSERT_STREQ(ulam_str_to_cstr(fresh5), "#####");
 
-    ulam_str_free(fresh2);
-    ulam_str_free(fresh5);
-
     ASSERT_LTERM_EQ_STR("#", x);
     ASSERT_LTERM_EQ_STR("####", x4);
     ASSERT_LTERM_EQ_STR("(\\####.####)", lx_x4);
@@ -221,9 +217,6 @@ UTEST(lam_clone, A) {
     ASSERT_STREQ("Application", lam_get_form_name_cstr(ap0ap1lx_x_1x_2yB));
     ASSERT_TRUE(lam_are_identical(&ap0ap1lx_x_1x_2y, ap0ap1lx_x_1x_2yB));
 
-    lam_free_term((Lterm*)x2);
-    lam_free_term((Lterm*)ap0ap1lx_x_1x_2yB);
-    lam_free_term((Lterm*)lx_x2);
 }
 
 
@@ -249,11 +242,6 @@ UTEST(substitute, base_unchanged) {
     Lterm* changed_app = lam_substitute(&xy, X, &s);
     ASSERT_FALSE(lam_are_identical(&xy , changed_app));
 
-    lam_free_term(unchanged_app);
-    lam_free_term(changed_app);
-    lam_free_term(unchanged_var);
-    lam_free_term(unchanged_abs);
-    lam_free_term(changed_abs);
 }
 
 UTEST(substitute, A) {
@@ -274,9 +262,6 @@ UTEST(substitute, A) {
     Lterm* unchanged = lam_substitute(&applx_x__ly_x, Y, &lx_ly_x);
     ASSERT_TRUE(lam_are_identical(&applx_x__ly_x , unchanged));
 
-    lam_free_term(substituted);
-    lam_free_term(changed);
-    lam_free_term(unchanged);
 
 }
 

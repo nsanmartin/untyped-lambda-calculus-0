@@ -1,34 +1,30 @@
 #ifndef __LAM_H_
 #define __LAM_H_
 
+#include <gc/gc.h>
+
 typedef struct { const char* s; int alloc; } Lstr;
 
 #define ulam_str(S) (Lstr){.s=S}
 #define ulam_allocated_str(S) (Lstr){.s=S, .alloc=1}
 
-// #define ulam_str_to_cstr(LS) (char*)LS.s
 static inline char* ulam_str_to_cstr(Lstr s) {
     return (char*)s.s;
 }
 
-//#define ulam_strdup(S)  ulam_allocated_str(strdup(ulam_str_to_cstr(S)))
 static inline Lstr ulam_strdup(Lstr s) {
-    if(s.alloc) return ulam_allocated_str(strdup(ulam_str_to_cstr(s)));
-    return ulam_str(s.s);
-
-}
-
-
-static inline const char* ulam_strdup_str(Lstr s) {
-    if(s.alloc) return strdup(ulam_str_to_cstr(s));
-    return s.s;
-
+    const char* copy = s.s;
+    int alloc = 0;
+    if(s.alloc) {
+        copy = GC_malloc(strlen(s.s) + 1);
+        alloc = copy != 0x0;
+    }
+    return (Lstr) {.s=copy, .alloc=alloc};
 }
 
 static inline bool ulam_str_null(Lstr s) {
     return !s.s;
 }
-static inline void ulam_str_free(Lstr s) { if (s.alloc) free((char*)s.s); }
 
 static inline int ulam_strcmp(Lstr s, Lstr t) {
     return strcmp(ulam_str_to_cstr(s), ulam_str_to_cstr(t));
