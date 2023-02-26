@@ -1,12 +1,7 @@
 #ifndef __LAM_H_
 #define __LAM_H_
 
-#include "datatype99.h"
-
-/* Lat stands for lamda term */
-
 typedef struct { const char* s; int alloc; } Lstr;
-//typedef const char* Lstr;
 
 #define ulam_str(S) (Lstr){.s=S}
 #define ulam_allocated_str(S) (Lstr){.s=S, .alloc=1}
@@ -39,35 +34,6 @@ static inline int ulam_strcmp(Lstr s, Lstr t) {
     return strcmp(ulam_str_to_cstr(s), ulam_str_to_cstr(t));
 }
 
-
-datatype(
-    LatTerm,
-    (LatVar, Lstr),
-    (LatAbs, Lstr, LatTerm*),
-    (LatApp, LatTerm*, LatTerm*)
-);
-
-Lstr ulam_get_form_name(const LatTerm t[static 1]) ;
-const char* ulam_get_form_name_cstr(const LatTerm t[static 1]) ;
-bool ulam_is_var_free_in(const LatTerm t[static 1], Lstr n) ;
-int ulam_max_reserved_var_len(const LatTerm t[static 1]) ;
-Lstr ulam_get_fresh_var_name(const LatTerm t[static 1]) ;
-LatTerm* ulam_clone(const LatTerm t[static 1]) ;
-bool ulam_are_identical(const LatTerm t[static 1], const LatTerm u[static 1]);
-int ulam_rename_var(LatTerm t[static 1], Lstr varname, Lstr newname) ;
-
-
-LatTerm* ulam_new_app(LatTerm fun[static 1], LatTerm param[static 1]) ;
-LatTerm* ulam_new_abs(Lstr x, LatTerm body[static 1]) ;
-LatTerm* ulam_new_var(Lstr x) ;
-
-LatTerm*
-ulam_substitute(const LatTerm t[static 1], Lstr x, const LatTerm s[static 1]);
-
-void ulam_free_term(LatTerm* t) ;
-
-void ulam_print_term(const LatTerm t[static 1]) ;
-char* ulam_term_to_string(const LatTerm t[static 1]) ;
 
 typedef enum { Lvartag, Labstag, Lapptag } Lamtag;
 

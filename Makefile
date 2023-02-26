@@ -1,5 +1,5 @@
 CFLAGS := -g -Wall -Werror -pedantic -fanalyzer \
-		  -Iinclude -Iutest.h -Idatatype99 -Imetalang99/include
+		  -Iinclude 
 
 CC=gcc
 
@@ -15,7 +15,7 @@ run-tests: ./build/tests
 	$<
 
 $(BUILD_DIR)/tests: tests.c $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -Iutest.h  -o $@ $^
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS) 
 	$(CC) -c -o $@ $< $(CFLAGS) 
