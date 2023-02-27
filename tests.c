@@ -7,18 +7,18 @@
 
 #include "lam.h"
 
-#define X ulam_str("x")
-#define Y ulam_str("y")
-#define Z ulam_str("z")
-#define T ulam_str("t")
-#define U ulam_str("u")
-#define V ulam_str("v")
-#define FRESH_VAR ulam_str("fresh var")
-#define RES_CHAR1 ulam_str("#")
-#define RES_CHAR2 ulam_str("##")
-#define RES_CHAR3 ulam_str("###")
-#define RES_CHAR4 ulam_str("####")
-#define RES_CHAR5 ulam_str("#####")
+#define X lam_str("x")
+#define Y lam_str("y")
+#define Z lam_str("z")
+#define T lam_str("t")
+#define U lam_str("u")
+#define V lam_str("v")
+#define FRESH_VAR lam_str("fresh var")
+#define RES_CHAR1 lam_str("#")
+#define RES_CHAR2 lam_str("##")
+#define RES_CHAR3 lam_str("###")
+#define RES_CHAR4 lam_str("####")
+#define RES_CHAR5 lam_str("#####")
 
 
 #define ASSERT_LTERM_NOTNULL(PTR)                                       \
@@ -26,8 +26,8 @@
 
 #define ASSERT_LTERM_EQ_STR(STR, LTERM)                                 \
     do {                                                                \
-        char* tstr;                                                     \
-        tstr = lam_term_to_string(&LTERM);                              \
+        const char* tstr;                                               \
+        tstr = lam_term_to_str(&LTERM).s;                               \
         ASSERT_NE((intptr_t)tstr, 0);                                   \
         ASSERT_LTERM_NOTNULL(tstr)                                      \
         ASSERT_STREQ(STR, tstr);                                        \
@@ -42,21 +42,29 @@
 #define ASSERT_LAPP(T)                                                  \
     ASSERT_EQ((T)->tag, Lapptag)
 
+
+
 UTEST_MAIN()
 
 UTEST(term_form_name,A) {
     Lterm x = LVAR(X);
-    ASSERT_STREQ("Variable", ulam_str_to_cstr(lam_get_form_name(&x)));
+    ASSERT_STREQ("Variable", lam_str_to_cstr(lam_get_form_name(&x)));
 
     Lterm lx_x = LABS(X, x);
-    ASSERT_STREQ("Abstraction", ulam_str_to_cstr(lam_get_form_name(&lx_x)));
+    ASSERT_STREQ("Abstraction", lam_str_to_cstr(lam_get_form_name(&lx_x)));
 
     Lterm app = LAPP(lx_x, x);
-    ASSERT_STREQ("Application", ulam_str_to_cstr(lam_get_form_name(&app)));
+    ASSERT_STREQ("Application", lam_str_to_cstr(lam_get_form_name(&app)));
 
+    Lterm xx = LAPP(LVAR(X), LVAR(X));
+    ASSERT_STREQ("Application", lam_str_to_cstr(lam_get_form_name(&xx)));
+
+    ASSERT_LTERM_EQ_STR("(x x)", xx);
     ASSERT_LTERM_EQ_STR("x", x);
     ASSERT_LTERM_EQ_STR("(\\x.x)", lx_x);
     ASSERT_LTERM_EQ_STR("((\\x.x) x)", app);
+
+    lam_free_mem();
 }
 
 
@@ -90,6 +98,8 @@ UTEST(lam_free_vars, Abs) {
     ASSERT_LTERM_EQ_STR("(\\z.(\\y.x))", lz_ly_x);
     ASSERT_LTERM_EQ_STR("(\\z.(\\x.x))", lz_lx_x);
     ASSERT_LTERM_EQ_STR("(\\x.(\\y.x))", lx_ly_x);
+
+    lam_free_mem();
 }
 
 
@@ -128,6 +138,8 @@ UTEST(LtermsFixture, free_vars_app) {
     ASSERT_LTERM_EQ_STR("((\\x.x) (\\y.x))", applx_x__ly_x);
     ASSERT_LTERM_EQ_STR("(((\\x.x) x) y)", ap1ap0lx_x_0lx_y_1y);
 
+
+    lam_free_mem();
 }
 
 UTEST(reserved_char_count, A) {
@@ -143,16 +155,18 @@ UTEST(reserved_char_count, A) {
     ASSERT_EQ(lam_max_reserved_var_len(&x4x), 4); 
 
     Lstr fresh2 = lam_get_fresh_var_name(&x);
-    ASSERT_STREQ(ulam_str_to_cstr(fresh2), "##");
+    ASSERT_STREQ(lam_str_to_cstr(fresh2), "##");
 
     Lstr fresh5 = lam_get_fresh_var_name(&x4);
-    ASSERT_STREQ(ulam_str_to_cstr(fresh5), "#####");
+    ASSERT_STREQ(lam_str_to_cstr(fresh5), "#####");
 
     ASSERT_LTERM_EQ_STR("#", x);
     ASSERT_LTERM_EQ_STR("####", x4);
     ASSERT_LTERM_EQ_STR("(\\####.####)", lx_x4);
     ASSERT_LTERM_EQ_STR("(#### #)", x4x);
 
+
+    lam_free_mem();
 }
 
 UTEST(rename, A) {
@@ -162,7 +176,7 @@ UTEST(rename, A) {
     lam_rename_var(&t, X, Y);
     ASSERT_LTERM_EQ_STR("y", t);
     ASSERT_LVAR(&t);
-    ASSERT_STREQ("y", ulam_str_to_cstr(t.var.name));
+    ASSERT_STREQ("y", lam_str_to_cstr(t.var.name));
 
     /// y, \y.y, \z.z
     Lterm ly_y = LABS(Y, LVAR(Y));
@@ -170,9 +184,9 @@ UTEST(rename, A) {
     lam_rename_var(&ly_y, Y, Z);
     ASSERT_LTERM_EQ_STR("(\\z.z)", ly_y);
     ASSERT_LABS(&ly_y);
-    ASSERT_STREQ("z", ulam_str_to_cstr(ly_y.abs.vname));
+    ASSERT_STREQ("z", lam_str_to_cstr(ly_y.abs.vname));
     ASSERT_LVAR(ly_y.abs.body);
-    ASSERT_STREQ("z", ulam_str_to_cstr(ly_y.abs.body->var.name));
+    ASSERT_STREQ("z", lam_str_to_cstr(ly_y.abs.body->var.name));
 
     /// y, \y.y, (y \y.y)
     Lterm app = LAPP(LVAR(Y), LABS(Y, LVAR(Y)));
@@ -183,9 +197,9 @@ UTEST(rename, A) {
     ASSERT_LTERM_EQ_STR("(t (\\t.t))", app);
 
     ASSERT_LVAR(app.app.fun);
-    ASSERT_STREQ("t", ulam_str_to_cstr(app.app.fun->var.name));
+    ASSERT_STREQ("t", lam_str_to_cstr(app.app.fun->var.name));
     ASSERT_LABS(app.app.param);
-    ASSERT_STREQ("t", ulam_str_to_cstr(app.app.param->abs.vname));
+    ASSERT_STREQ("t", lam_str_to_cstr(app.app.param->abs.vname));
     ASSERT_LTERM_EQ_STR("(t (\\t.t))", app);
     ASSERT_LVAR(app.app.param->abs.body);
     Lterm* body = app.app.param->abs.body;
@@ -217,6 +231,8 @@ UTEST(lam_clone, A) {
     ASSERT_STREQ("Application", lam_get_form_name_cstr(ap0ap1lx_x_1x_2yB));
     ASSERT_TRUE(lam_are_identical(&ap0ap1lx_x_1x_2y, ap0ap1lx_x_1x_2yB));
 
+
+    lam_free_mem();
 }
 
 
@@ -242,6 +258,8 @@ UTEST(substitute, base_unchanged) {
     Lterm* changed_app = lam_substitute(&xy, X, &s);
     ASSERT_FALSE(lam_are_identical(&xy , changed_app));
 
+
+    lam_free_mem();
 }
 
 UTEST(substitute, A) {
@@ -263,6 +281,8 @@ UTEST(substitute, A) {
     ASSERT_TRUE(lam_are_identical(&applx_x__ly_x , unchanged));
 
 
+
+    lam_free_mem();
 }
 
 
