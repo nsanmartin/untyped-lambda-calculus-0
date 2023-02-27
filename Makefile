@@ -20,6 +20,9 @@ $(BUILD_DIR)/tests: tests.c $(OBJS)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS) 
 	$(CC) $(LAMF) -c -o $@ $< $(CFLAGS) $(GC_LIBS)
 
+tags: $(HEADERS) $(SRCS) tests.c utest.h/utest.h
+	universal-ctags $^ 
+
 clean:
 	find ./build/ -type f -delete
 

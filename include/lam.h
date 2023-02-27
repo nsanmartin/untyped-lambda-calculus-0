@@ -8,7 +8,7 @@ typedef struct { const char* s; int alloc; } Lstr;
 #define lam_str(S) (Lstr){.s=S, .alloc=0}
 #define lam_allocated_str(S) (Lstr){.s=S, .alloc=1}
 
-#define LEMPTY_STR (Lstr){.s=0, .alloc=0}
+#define LEMPTY_STR (Lstr){0}
 
 static inline char* lam_str_to_cstr(Lstr s) {
     return (char*)s.s;
@@ -41,6 +41,7 @@ static inline int lam_strcmp(Lstr s, Lstr t) {
     return strcmp(lam_str_to_cstr(s), lam_str_to_cstr(t));
 }
 
+//todo: store str len
 static inline size_t lam_strlen(Lstr s) {
     return strlen(s.s);
 }
