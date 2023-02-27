@@ -34,13 +34,13 @@
     } while (0);
 
 #define ASSERT_LVAR(T)                                                  \
-    ASSERT_EQ((T)->tag, Lvartag)
+    ASSERT_EQ((T)->tag, (Lamtag)Lvartag)
 
 #define ASSERT_LABS(T)                                                  \
-    ASSERT_EQ((T)->tag, Labstag)
+    ASSERT_EQ((T)->tag, (Lamtag)Labstag)
 
 #define ASSERT_LAPP(T)                                                  \
-    ASSERT_EQ((T)->tag, Lapptag)
+    ASSERT_EQ((T)->tag, (Lamtag)Lapptag)
 
 
 

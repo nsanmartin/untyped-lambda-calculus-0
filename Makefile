@@ -1,4 +1,4 @@
-CFLAGS := -g -Wall -Werror -pedantic -fanalyzer -Iinclude 
+CFLAGS := -g -Wall -Wextra -Werror -pedantic -fanalyzer -Iinclude 
 
 GC_LIBS:=`pkg-config --libs bdw-gc`
 CC=gcc
