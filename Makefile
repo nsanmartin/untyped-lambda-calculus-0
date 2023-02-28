@@ -23,6 +23,13 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS)
 tags: $(HEADERS) $(SRCS) tests.c utest.h/utest.h
 	universal-ctags $^ 
 
+
+build/lexer: build/lex.yy.c
+	$(CC) -o $@ $<
+
+build/lex.yy.c:lexer.l
+	flex -o $@ $<
+
 clean:
 	find ./build/ -type f -delete
 
