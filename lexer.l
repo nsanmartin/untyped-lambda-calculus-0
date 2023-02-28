@@ -1,19 +1,17 @@
 %{
 #include <stdio.h>
+#include "parser.tab.h"
 %}
 
 %option noyywrap
 
 %%
-[ \t]   ;
-"."     { printf("dot "); }
-"("     {  printf("left paren "); }
-")"     {  printf("right paren "); }
-"\\"     {  printf("LAMBDA "); }
-[a-zA-Z][a-zA-Z0-9_]* { printf("VAR "); }
+[ \t]                   { continue; }
+"."                     { return DOT; }
+"("                     { return LPAREN; }
+")"                     { return RPAREN; }
+"\\"                    { return LAMBDA; }
+[a-zA-Z][a-zA-Z0-9_]*   { return VAR; }
+"\n"                    { return EOL; }
 
 %%
-
-int main () {
-    yylex();
-}

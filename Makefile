@@ -24,11 +24,14 @@ tags: $(HEADERS) $(SRCS) tests.c utest.h/utest.h
 	universal-ctags $^ 
 
 
-build/lexer: build/lex.yy.c
-	$(CC) -o $@ $<
+build/parser: build/parser.tab.c build/lex.yy.c
+	$(CC) -Ibuild -o $@ $^ -lfl
 
-build/lex.yy.c:lexer.l
+build/lex.yy.c: lexer.l build/parser.tab.h build/parser.tab.c 
 	flex -o $@ $<
+
+build/parser.tab.h build/parser.tab.c: parser.y
+	bison -t -d -o $@ $<
 
 clean:
 	find ./build/ -type f -delete
