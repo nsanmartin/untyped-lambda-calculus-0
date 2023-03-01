@@ -2,6 +2,8 @@
 #define __LAM_H_
 
 #include "mem.h"
+#include <string.h>
+#include <stdbool.h>
 
 typedef struct { const char* s; int alloc; } Lstr;
 

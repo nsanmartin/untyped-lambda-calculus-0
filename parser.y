@@ -1,5 +1,6 @@
 %code requires {
     #include <stdio.h>
+    #include <lam.h>
 
     extern FILE* yyin;
 
