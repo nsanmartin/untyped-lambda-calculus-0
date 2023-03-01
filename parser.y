@@ -8,20 +8,47 @@
     extern void yyerror(const char*);
 }
 
+%union {
+    char* sval;
+    Lterm* termval;
+}
+
+
 %token DOT
 %token LPAREN
 %token RPAREN
 %token LAMBDA
-%token VAR
+%token <sval> VAR
 %token EOL
+
+%nterm <termval> term
 
 %%
 expression:
-    | expression term EOL                   { printf("EXPRESSION\n"); }
+    | expression term EOL                   { printf(" EXPRESSION\n"); }
     ;
-term: VAR                                   { printf("VAR "); }
-   | LPAREN term term RPAREN                { printf("APP "); }
-   | LPAREN LAMBDA VAR DOT term RPAREN      { printf("ABS "); }
+term: VAR                                   {
+
+       printf("VAR: ");
+       Lterm* var = lam_new_var(lam_str($1));
+       lam_print_term(var);
+       $$ = var;
+       puts("");
+   }
+   | LPAREN term term RPAREN                {
+       printf("APP: ");
+       Lterm* app = lam_new_app($2, $3);
+       lam_print_term(app);
+       $$ = app;
+       puts("");
+   }
+   | LPAREN LAMBDA VAR DOT term RPAREN      {
+       printf("ABS: ");
+       Lterm* abs = lam_new_abs(lam_str($3), $5);
+       lam_print_term(abs);
+       $$ = abs;
+       puts("");
+   }
    ;
 %%
 
@@ -33,3 +60,4 @@ int main () {
 void yyerror(const char* s) {
     fprintf(stderr, "error: %s\n", s);
 }
+
