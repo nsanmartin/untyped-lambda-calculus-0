@@ -1,38 +1,40 @@
 CFLAGS:=-g -Wall -Wextra -pedantic -Iinclude 
 STRICT_CFLAGS:=-fanalyzer -Werror
 
-GC_LIBS:=`pkg-config --libs bdw-gc`
+GC_LIBS:=$(shell pkg-config --libs bdw-gc)
 CC=gcc
 
 BUILD_DIR=./build
 OBJ_DIR=./build
 SRC_DIR=./src
+PARSER_DIR=./parser
 
 HEADERS=$(wildcard include/*.h)
 SRCS=$(wildcard src/*.c)
 OBJS=$(SRCS:src/%.c=build/%.o)
 
-run-tests: ./build/tests
+run-utests: $(BUILD_DIR)/utests
 	$<
 
-$(BUILD_DIR)/tests: tests.c $(OBJS)
+$(BUILD_DIR)/utests: utests.c $(OBJS)
 	$(CC) $(LAMF) $(STRICT_CFLAGS) $(CFLAGS) -Iutest.h  -o $@ $^ $(GC_LIBS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS) 
 	$(CC) $(LAMF) $(STRICT_CFLAGS) -c -o $@ $< $(CFLAGS) $(GC_LIBS)
 
-tags: $(HEADERS) $(SRCS) tests.c utest.h/utest.h
-	universal-ctags $^ 
-
-
-build/parser: build/parser.tab.c build/lex.yy.c $(OBJS) 
+$(BUILD_DIR)/parser: $(PARSER_DIR)/parser.tab.c $(PARSER_DIR)/lex.yy.c \
+	$(OBJS) 
 	$(CC) $(CFLAGS) -Ibuild -o $@ $^ -lfl $(GC_LIBS)
 
-build/lex.yy.c: lexer.l build/parser.tab.h build/parser.tab.c 
+$(PARSER_DIR)/lex.yy.c: lexer.l \
+	$(PARSER_DIR)/parser.tab.h $(PARSER_DIR)/parser.tab.c 
 	flex -o $@ $<
 
-build/parser.tab.h build/parser.tab.c: parser.y
+$(PARSER_DIR)/parser.tab.h $(PARSER_DIR)/parser.tab.c: parser.y
 	bison -t -d -o $@ $<
+
+tags: $(HEADERS) $(SRCS) lexer.l parser.y utests.c itests.c
+	universal-ctags -R .
 
 clean:
 	find ./build/ -type f -delete
