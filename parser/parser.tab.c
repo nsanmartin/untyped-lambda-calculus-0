@@ -491,7 +491,7 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int8 yyrline[] =
 {
-       0,    27,    27,    28,    30,    38,    45
+       0,    28,    28,    29,    35,    41,    46
 };
 #endif
 
@@ -1052,51 +1052,54 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-  case 3: /* expression: expression term EOL  */
+  case 2: /* expression: %empty  */
 #line 28 "parser.y"
-                                            { printf(" EXPRESSION\n"); }
+                                            { (yyval.termval) = 0x0; }
 #line 1059 "parser/parser.tab.c"
     break;
 
+  case 3: /* expression: expression term EOL  */
+#line 29 "parser.y"
+                                            {
+        lam_print_term((yyvsp[-1].termval));
+        puts("");
+    }
+#line 1068 "parser/parser.tab.c"
+    break;
+
   case 4: /* term: VAR  */
-#line 30 "parser.y"
+#line 35 "parser.y"
                                             {
 
-       printf("VAR: ");
        Lterm* var = lam_new_var(lam_str((yyvsp[0].sval)));
-       lam_print_term(var);
+       //lam_print_term(var);
        (yyval.termval) = var;
-       puts("");
    }
-#line 1072 "parser/parser.tab.c"
+#line 1079 "parser/parser.tab.c"
     break;
 
   case 5: /* term: LPAREN term term RPAREN  */
-#line 38 "parser.y"
+#line 41 "parser.y"
                                             {
-       printf("APP: ");
        Lterm* app = lam_new_app((yyvsp[-2].termval), (yyvsp[-1].termval));
-       lam_print_term(app);
+       //lam_print_term(app);
        (yyval.termval) = app;
-       puts("");
    }
-#line 1084 "parser/parser.tab.c"
+#line 1089 "parser/parser.tab.c"
     break;
 
   case 6: /* term: LPAREN LAMBDA VAR DOT term RPAREN  */
-#line 45 "parser.y"
+#line 46 "parser.y"
                                             {
-       printf("ABS: ");
        Lterm* abs = lam_new_abs(lam_str((yyvsp[-3].sval)), (yyvsp[-1].termval));
-       lam_print_term(abs);
+       //lam_print_term(abs);
        (yyval.termval) = abs;
-       puts("");
    }
-#line 1096 "parser/parser.tab.c"
+#line 1099 "parser/parser.tab.c"
     break;
 
 
-#line 1100 "parser/parser.tab.c"
+#line 1103 "parser/parser.tab.c"
 
       default: break;
     }
@@ -1289,13 +1292,15 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 53 "parser.y"
+#line 52 "parser.y"
 
 
+#ifndef LAM_LIB_PARSER
 int main () {
     yyin = stdin;
     yyparse();
 }
+#endif
 
 void yyerror(const char* s) {
     fprintf(stderr, "error: %s\n", s);

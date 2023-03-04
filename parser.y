@@ -22,40 +22,41 @@
 %token EOL
 
 %nterm <termval> term
+%nterm <termval> expression
 
 %%
-expression:
-    | expression term EOL                   { printf(" EXPRESSION\n"); }
+expression:                                 { $$ = 0x0; }
+    | expression term EOL                   {
+        lam_print_term($2);
+        puts("");
+    }
+
     ;
 term: VAR                                   {
 
-       printf("VAR: ");
        Lterm* var = lam_new_var(lam_str($1));
-       lam_print_term(var);
+       //lam_print_term(var);
        $$ = var;
-       puts("");
    }
    | LPAREN term term RPAREN                {
-       printf("APP: ");
        Lterm* app = lam_new_app($2, $3);
-       lam_print_term(app);
+       //lam_print_term(app);
        $$ = app;
-       puts("");
    }
    | LPAREN LAMBDA VAR DOT term RPAREN      {
-       printf("ABS: ");
        Lterm* abs = lam_new_abs(lam_str($3), $5);
-       lam_print_term(abs);
+       //lam_print_term(abs);
        $$ = abs;
-       puts("");
    }
    ;
 %%
 
+#ifndef LAM_LIB_PARSER
 int main () {
     yyin = stdin;
     yyparse();
 }
+#endif
 
 void yyerror(const char* s) {
     fprintf(stderr, "error: %s\n", s);
