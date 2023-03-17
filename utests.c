@@ -286,3 +286,13 @@ UTEST(substitute, A) {
 }
 
 
+UTEST(substitute, renaming_var) {
+    Lterm xy = LAPP(LVAR(X),LVAR(Y));
+
+    Lterm ly_x = LABS(Y, LVAR(X));
+    Lterm* substituted = lam_substitute(&ly_x, X, &xy);
+
+    Lterm xResVarName = LAPP(LVAR(X),LVAR(RES_CHAR1));
+    Lterm ly_xResVarName = LABS(Y, xResVarName);
+    ASSERT_TRUE(lam_are_identical(substituted, &ly_xResVarName));
+}
