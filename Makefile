@@ -1,11 +1,13 @@
 CFLAGS:=-g -Wall -Wextra -pedantic -Iinclude -Ibdwgc/include
-STRICT_CFLAGS:=-fanalyzer -Werror
+STRICT_CFLAGS:= -Werror
 
 # GC_LIBS:=$(shell pkg-config --libs bdw-gc)
 # GC_LIBS:=bdwgc/extra/gc.c
 GC=bdwgc/extra/gc.c
 
-CC=gcc
+# CC=gcc -fanalyzer
+# CC=zig cc
+# CC=clang
 
 BUILD_DIR=./build
 OBJ_DIR=./build
@@ -39,7 +41,7 @@ $(BUILD_DIR)/parser: $(PARSER_DIR)/parser.tab.c $(PARSER_DIR)/lex.yy.c \
 
 
 $(BUILD_DIR)/gc.o:
-	gcc -c -o $(BUILD_DIR)/gc.o bdwgc/extra/gc.c -I bdwgc/include/
+	$(CC) -c -o $(BUILD_DIR)/gc.o bdwgc/extra/gc.c -I bdwgc/include/
 
 $(PARSER_DIR)/lex.yy.c: lexer.l \
 	$(PARSER_DIR)/parser.tab.h $(PARSER_DIR)/parser.tab.c 
