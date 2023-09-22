@@ -37,7 +37,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS)
 	$(CC) $(LAMF) $(STRICT_CFLAGS) -c -o $@  $< $(CFLAGS) 
 
 $(BUILD_DIR)/parser: $(PARSER_DIR)/parser-util.c $(PARSER_DIR)/parser.tab.c $(PARSER_DIR)/lex.yy.c \
-	$(OBJS) 
+	$(OBJS) $(GCOBJ)
 	$(CC) $(CFLAGS) -I$(PARSER_DIR) -o $@ $^ -lfl $(GC_LIBS)
 
 
