@@ -1,5 +1,7 @@
-#include "parser.tab.c"
-#include "parser-util.c"
+// #include "parser.tab.c"
+#include <stdio.h>
+
+#include "parser-util.h"
 
 void test_parse_impl(const char* s, const char* r) {
     printf("parsing '%s' => %s\n", s, r);
