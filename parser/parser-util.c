@@ -24,6 +24,6 @@ void set_lam_term(Lterm* t) {
     _lterm = t;
 }
 
-Lterm* get_lam_term() {
+Lterm* get_lam_term(void) {
     return _lterm;
 }

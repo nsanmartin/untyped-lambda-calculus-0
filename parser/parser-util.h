@@ -18,5 +18,5 @@ void end_lexical_scan(void);
 Lstr parse_string(const char* in) ;
 
 void set_lam_term(Lterm* t) ;
-Lterm* get_lam_term() ;
+Lterm* get_lam_term(void) ;
 #endif

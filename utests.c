@@ -212,13 +212,13 @@ UTEST(rename, A) {
 UTEST(lam_clone, A) {
     //Lterm x = LVAR(X);
     const Lterm* x2 = lam_clone(&LVAR(X));
-    ASSERT_FALSE(&LVAR(X) == x2);
+    ASSERT_FALSE((&LVAR(X) == x2));
     ASSERT_STREQ("Variable", lam_get_form_name_cstr(x2));
     ASSERT_TRUE(lam_are_identical(&LVAR(X), x2));
 
     Lterm lx_x = LABS(X, LVAR(X));
     const Lterm* lx_x2 = lam_clone(&lx_x);
-    ASSERT_FALSE(&lx_x == lx_x2);
+    ASSERT_FALSE((&lx_x == lx_x2));
     ASSERT_STREQ( "Abstraction", lam_get_form_name_cstr(lx_x2));
     ASSERT_TRUE(lam_are_identical(&lx_x, lx_x2));
 
@@ -227,7 +227,7 @@ UTEST(lam_clone, A) {
     Lterm applx_x__x = LAPP(lx_x, LVAR(X));
     Lterm ap0ap1lx_x_1x_2y = LAPP(applx_x__x, y);
     const Lterm* ap0ap1lx_x_1x_2yB = lam_clone(&ap0ap1lx_x_1x_2y); 
-    ASSERT_FALSE(&ap0ap1lx_x_1x_2y == ap0ap1lx_x_1x_2yB);
+    ASSERT_FALSE((&ap0ap1lx_x_1x_2y == ap0ap1lx_x_1x_2yB));
     ASSERT_STREQ("Application", lam_get_form_name_cstr(ap0ap1lx_x_1x_2yB));
     ASSERT_TRUE(lam_are_identical(&ap0ap1lx_x_1x_2y, ap0ap1lx_x_1x_2yB));
 

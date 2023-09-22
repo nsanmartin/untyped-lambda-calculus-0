@@ -9,7 +9,7 @@ GCOBJ=$(BUILD_DIR)/gc.o
 # CC=gcc
 # CC=gcc -fanalyzer
 # CC=zig cc 
-CC=clang
+# CC=clang
 
 BUILD_DIR=./build
 OBJ_DIR=./build
