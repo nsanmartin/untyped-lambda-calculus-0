@@ -1,6 +1,7 @@
 %code requires {
     #include <stdio.h>
     #include <lam.h>
+    #include "parser-util.h"
 
     extern FILE* yyin;
 
@@ -29,6 +30,8 @@ expression:                                 { $$ = 0x0; }
     | expression term EOL                   {
         lam_print_term($2);
         puts("");
+        set_lam_term($2);
+        $$ = $2;
     }
 
     ;

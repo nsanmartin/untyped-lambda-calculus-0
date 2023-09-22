@@ -491,7 +491,7 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int8 yyrline[] =
 {
-       0,    28,    28,    29,    35,    41,    46
+       0,    29,    29,    30,    38,    44,    49
 };
 #endif
 
@@ -1053,53 +1053,55 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* expression: %empty  */
-#line 28 "parser.y"
+#line 29 "parser.y"
                                             { (yyval.termval) = 0x0; }
 #line 1059 "parser/parser.tab.c"
     break;
 
   case 3: /* expression: expression term EOL  */
-#line 29 "parser.y"
+#line 30 "parser.y"
                                             {
         lam_print_term((yyvsp[-1].termval));
         puts("");
+        set_lam_term((yyvsp[-1].termval));
+        (yyval.termval) = (yyvsp[-1].termval);
     }
-#line 1068 "parser/parser.tab.c"
+#line 1070 "parser/parser.tab.c"
     break;
 
   case 4: /* term: VAR  */
-#line 35 "parser.y"
+#line 38 "parser.y"
                                             {
 
        Lterm* var = lam_new_var(lam_str((yyvsp[0].sval)));
        //lam_print_term(var);
        (yyval.termval) = var;
    }
-#line 1079 "parser/parser.tab.c"
+#line 1081 "parser/parser.tab.c"
     break;
 
   case 5: /* term: LPAREN term term RPAREN  */
-#line 41 "parser.y"
+#line 44 "parser.y"
                                             {
        Lterm* app = lam_new_app((yyvsp[-2].termval), (yyvsp[-1].termval));
        //lam_print_term(app);
        (yyval.termval) = app;
    }
-#line 1089 "parser/parser.tab.c"
+#line 1091 "parser/parser.tab.c"
     break;
 
   case 6: /* term: LPAREN LAMBDA VAR DOT term RPAREN  */
-#line 46 "parser.y"
+#line 49 "parser.y"
                                             {
        Lterm* abs = lam_new_abs(lam_str((yyvsp[-3].sval)), (yyvsp[-1].termval));
        //lam_print_term(abs);
        (yyval.termval) = abs;
    }
-#line 1099 "parser/parser.tab.c"
+#line 1101 "parser/parser.tab.c"
     break;
 
 
-#line 1103 "parser/parser.tab.c"
+#line 1105 "parser/parser.tab.c"
 
       default: break;
     }
@@ -1292,7 +1294,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 52 "parser.y"
+#line 55 "parser.y"
 
 
 #ifndef LAM_LIB_PARSER

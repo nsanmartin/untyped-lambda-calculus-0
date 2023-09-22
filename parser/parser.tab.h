@@ -49,13 +49,14 @@ extern int yydebug;
 
     #include <stdio.h>
     #include <lam.h>
+    #include "parser-util.h"
 
     extern FILE* yyin;
 
     extern int yylex(void);
     extern void yyerror(const char*);
 
-#line 59 "parser/parser.tab.h"
+#line 60 "parser/parser.tab.h"
 
 /* Token kinds.  */
 #ifndef YYTOKENTYPE
@@ -80,12 +81,12 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 11 "parser.y"
+#line 12 "parser.y"
 
     char* sval;
     Lterm* termval;
 
-#line 89 "parser/parser.tab.h"
+#line 90 "parser/parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

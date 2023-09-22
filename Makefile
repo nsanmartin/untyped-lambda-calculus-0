@@ -36,7 +36,7 @@ $(BUILD_DIR)/itests: itests.c $(OBJS) $(BUILD_DIR)/gc.o $(PARSER_DIR)/lex.yy.c
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS) 
 	$(CC) $(LAMF) $(STRICT_CFLAGS) -c -o $@  $< $(CFLAGS) 
 
-$(BUILD_DIR)/parser: $(PARSER_DIR)/util.c $(PARSER_DIR)/parser.tab.c $(PARSER_DIR)/lex.yy.c \
+$(BUILD_DIR)/parser: $(PARSER_DIR)/parser-util.c $(PARSER_DIR)/parser.tab.c $(PARSER_DIR)/lex.yy.c \
 	$(OBJS) 
 	$(CC) $(CFLAGS) -I$(PARSER_DIR) -o $@ $^ -lfl $(GC_LIBS)
 
