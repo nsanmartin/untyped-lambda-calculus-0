@@ -4,6 +4,8 @@
 %}
 
 %option noyywrap
+%option nounput
+%option noinput
 
 %%
 [ \t]                   { continue; }
@@ -19,7 +21,6 @@
 "\n"                    { return EOL; }
 
 %%
-
 
 void set_input_string(const char* in) {
   yy_scan_string(in);

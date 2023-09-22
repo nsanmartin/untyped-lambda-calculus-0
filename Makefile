@@ -4,10 +4,12 @@ STRICT_CFLAGS:= -Werror
 # GC_LIBS:=$(shell pkg-config --libs bdw-gc)
 # GC_LIBS:=bdwgc/extra/gc.c
 GC=bdwgc/extra/gc.c
+GCOBJ=$(BUILD_DIR)/gc.o
 
+# CC=gcc
 # CC=gcc -fanalyzer
-# CC=zig cc
-# CC=clang
+# CC=zig cc 
+CC=clang
 
 BUILD_DIR=./build
 OBJ_DIR=./build
@@ -24,18 +26,17 @@ run-tests: $(BUILD_DIR)/utests $(BUILD_DIR)/itests
 	$(BUILD_DIR)/itests
 
 
-$(BUILD_DIR)/utests: utests.c $(OBJS) $(BUILD_DIR)/gc.o
-	$(CC) $(LAMF) $(STRICT_CFLAGS) $(CFLAGS) -Iutest.h  -o $@ $^ $(GC_LIBS)
+$(BUILD_DIR)/utests: utests.c $(OBJS) $(GCOBJ)
+	$(CC) $(LAMF) $(STRICT_CFLAGS) $(CFLAGS) -Iutest.h  -o $@ $^ 
 
 $(BUILD_DIR)/itests: itests.c $(OBJS) $(BUILD_DIR)/gc.o $(PARSER_DIR)/lex.yy.c
-	echo TODO: check -fanalyzer
 	$(CC) -DLAM_LIB_PARSER $(LAMF) $(CFLAGS) \
 		-Iutest.h -I$(PARSER_DIR) -o $@ $^ $(GC_LIBS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS) 
-	$(CC) $(LAMF) $(STRICT_CFLAGS) -c -o $@  $< $(CFLAGS) $(GC_LIBS)
+	$(CC) $(LAMF) $(STRICT_CFLAGS) -c -o $@  $< $(CFLAGS) 
 
-$(BUILD_DIR)/parser: $(PARSER_DIR)/parser.tab.c $(PARSER_DIR)/lex.yy.c \
+$(BUILD_DIR)/parser: $(PARSER_DIR)/util.c $(PARSER_DIR)/parser.tab.c $(PARSER_DIR)/lex.yy.c \
 	$(OBJS) 
 	$(CC) $(CFLAGS) -I$(PARSER_DIR) -o $@ $^ -lfl $(GC_LIBS)
 
