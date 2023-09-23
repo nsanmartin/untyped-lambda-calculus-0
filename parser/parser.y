@@ -1,12 +1,9 @@
 %code requires {
     #include <stdio.h>
     #include <lam.h>
-    #include "parser-util.h"
+    #include <parser-util.h>
 
-    extern FILE* yyin;
 
-    extern int yylex(void);
-    extern void yyerror(const char*);
 }
 
 %union {
@@ -22,36 +19,43 @@
 %token <sval> VAR
 %token EOL
 
-%nterm <termval> term
 %nterm <termval> expression
+%nterm <termval> app_expr
+%nterm <termval> simple_expr
 
 %%
-expression:                                 { $$ = 0x0; }
-    | expression term EOL                   {
-        lam_print_term($2);
-        puts("");
-        set_lam_term($2);
+
+expression_list:
+    expression EOL { set_last_lam_term($1); }
+    | expression_list expression EOL { set_last_lam_term($2); }
+    ;
+
+expression:
+    LAMBDA VAR DOT expression {
+        Lterm* abs = lam_new_abs(lam_str($2), $4);
+        $$ = abs;
+    }
+    | app_expr { $$ = $1; }
+    ;
+
+app_expr:
+    simple_expr { $$ = $1; }
+    | app_expr simple_expr {
+        Lterm* app = lam_new_app($1, $2);
+        $$ = app;
+    }
+    ;
+
+simple_expr:
+    VAR {
+        Lterm* var = lam_new_var(lam_str($1));
+        $$ = var;
+    }
+    | LPAREN expression RPAREN {
         $$ = $2;
     }
-
     ;
-term: VAR                                   {
 
-       Lterm* var = lam_new_var(lam_str($1));
-       //lam_print_term(var);
-       $$ = var;
-   }
-   | LPAREN term term RPAREN                {
-       Lterm* app = lam_new_app($2, $3);
-       //lam_print_term(app);
-       $$ = app;
-   }
-   | LPAREN LAMBDA VAR DOT term RPAREN      {
-       Lterm* abs = lam_new_abs(lam_str($3), $5);
-       //lam_print_term(abs);
-       $$ = abs;
-   }
-   ;
 %%
 
 #ifndef LAM_LIB_PARSER

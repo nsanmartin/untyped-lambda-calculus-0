@@ -17,7 +17,7 @@
     char* text = lam_strdup_str(strlen(yytext), yytext);
     yylval.sval = text;
     return VAR;
-    }
+}
 "\n"                    { return EOL; }
 
 %%

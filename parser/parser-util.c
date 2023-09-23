@@ -20,7 +20,9 @@ Lstr parse_string(const char* in) {
 }
 
 Lterm* _lterm;
-void set_lam_term(Lterm* t) {
+void set_last_lam_term(Lterm* t) {
+    lam_print_term(t);
+    puts("");
     _lterm = t;
 }
 
